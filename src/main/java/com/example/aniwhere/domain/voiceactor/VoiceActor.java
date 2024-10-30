@@ -15,6 +15,6 @@ public class VoiceActor {
     @Column(name = "voice_actor_id")
     private Long voiceActorId;
 
-    @Column(name = "name", length = 255, nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 }

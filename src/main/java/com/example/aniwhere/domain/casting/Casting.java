@@ -24,7 +24,7 @@ public class Casting {
     @JoinColumn(name = "voice_actor_id", nullable = false)
     private VoiceActor voiceActor;
 
-    @Column(name = "character_name", length = 255, nullable = false)
+    @Column(name = "character_name", nullable = false)
     private String characterName;
 
     @Column(name = "character_description", columnDefinition = "TEXT")
