@@ -1,4 +1,4 @@
-package com.example.aniwhere.domain.catogory;
+package com.example.aniwhere.domain.category;
 
 
 import jakarta.persistence.*;

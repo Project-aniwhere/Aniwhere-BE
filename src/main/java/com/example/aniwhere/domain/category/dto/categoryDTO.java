@@ -1,4 +1,4 @@
-package com.example.aniwhere.domain.catogory.dto;
+package com.example.aniwhere.domain.category.dto;
 
 import lombok.Getter;
 import lombok.Setter;

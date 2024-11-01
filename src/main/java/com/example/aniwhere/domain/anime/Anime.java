@@ -1,7 +1,7 @@
 package com.example.aniwhere.domain.anime;
 
 import com.example.aniwhere.domain.casting.Casting;
-import com.example.aniwhere.domain.catogory.Category;
+import com.example.aniwhere.domain.category.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
