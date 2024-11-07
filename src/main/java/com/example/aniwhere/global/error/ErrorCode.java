@@ -17,6 +17,8 @@ public enum ErrorCode {
 	INVALID_TOKEN(400, "C009", "유효하지 않은 토큰입니다."),
 	UNAUTHORIZED(401, "C010", "권한이 없습니다."),
 
+	NOT_FOUND_ANIME(400, "A001", "애니메이션을 찾을 수 없습니다."),
+
 	INTERNAL_SERVER_ERROR(500, "S001", "서버 측 에러입니다."),
 	NOT_FOUND_REFRESH_TOKEN(500, "S002", "리프레시 토큰을 찾을 수 없습니다.");
 

@@ -71,4 +71,12 @@ public class GlobalExceptionHandler {
 		final ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
+	//입력값 잘못된 경우
+	@ExceptionHandler(InvalidInputException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidInputException(InvalidInputException e) {
+		log.error("InvalidInputException", e);
+		final ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE);
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
 }
