@@ -1,12 +1,13 @@
-package com.example.aniwhere.application.user;
+package com.example.aniwhere.service.user;
 
-import com.example.aniwhere.global.error.ErrorCode;
-import com.example.aniwhere.global.error.exception.MailSendFailException;
+import com.example.aniwhere.global.error.exception.MailSendException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
+import static com.example.aniwhere.global.error.ErrorCode.*;
 
 @Slf4j
 @Service
@@ -15,6 +16,13 @@ public class EmailService {
 
 	private final JavaMailSender emailSender;
 
+	/**
+	 * 인증 코드를 포함한 이메일 발송
+	 * @param toEmail
+	 * @param title
+	 * @param text
+	 * @return void
+	 */
 	public void sendEmail(String toEmail, String title, String text) {
 
 		SimpleMailMessage emailForm = createEmailForm(toEmail, title, text);
@@ -22,7 +30,7 @@ public class EmailService {
 			emailSender.send(emailForm);
 		} catch (RuntimeException e) {
 			log.error("메일 발송에 실패했습니다. 발송 이메일:{}, 제목:{}, 내용:{}", toEmail, title, text);
-			throw new MailSendFailException("메일 발송에 실패했습니다.", ErrorCode.MAIL_SEND_FAIL);
+			throw new MailSendException(SERVICE_UNAVAILABLE, false);
 		}
  	}
 
