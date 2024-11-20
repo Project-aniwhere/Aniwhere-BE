@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.jwt;
+package com.example.aniwhere.application.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

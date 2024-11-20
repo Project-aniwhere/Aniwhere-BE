@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -12,11 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry
-				.addMapping("/**") //CORS 적용할 URL 패턴
-				.allowedOriginPatterns("*") //자원 공유 오리진 지정
-				.allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS") //요청 허용 메서드
-				.allowedHeaders("*") //요청 허용 헤더
-				.allowCredentials(true) //요청 허용 쿠키
+				.addMapping("/**")
+				.allowedOriginPatterns("*")
+				.allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
+				.allowedHeaders("*")
+				.allowCredentials(true)
 				.maxAge(MAX_AGE_SECS);
 	}
 }

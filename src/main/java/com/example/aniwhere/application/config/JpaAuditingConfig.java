@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

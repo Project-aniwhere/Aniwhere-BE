@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,5 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
-import com.example.aniwhere.infrastructure.config.util.SendErrorUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

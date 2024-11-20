@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.oauth2;
+package com.example.aniwhere.application.oauth2;
 
 public interface OAuth2UserInfo {
 

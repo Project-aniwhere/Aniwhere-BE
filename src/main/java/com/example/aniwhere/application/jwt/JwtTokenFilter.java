@@ -1,7 +1,10 @@
-package com.example.aniwhere.infrastructure.jwt;
+package com.example.aniwhere.application.jwt;
 
+import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.domain.token.TokenType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+import static com.example.aniwhere.domain.token.TokenType.ACCESS_TOKEN;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -24,14 +29,23 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			"/api/auth/signup",
 			"/api/auth/email/verifications-requests",
 			"/api/auth/email/verifications",
+			"/api/kakaoreissue",
 			"/error",
 			"/favicon.ico",
 			"/"
 	);
+	private final CookieConfig cookieConfig;
 	private final TokenProvider tokenProvider;
-	private final static String HEADER_AUTHORIZATION = "Authorization";
-	private final static String TOKEN_PREFIX = "Bearer ";
 
+	/**
+	 * 백엔드에서 발급해주는 액세스 토큰의 유효성을 검증하여 컨트롤러에 도착하기 전 필터에서 검증
+	 * 소셜 로그인 유저에 대해서
+	 * @param request
+	 * @param response
+	 * @param filterChain
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
@@ -44,22 +58,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		String header = request.getHeader(HEADER_AUTHORIZATION);
-		log.info("헤더 정보={}", header);
+		String accessToken = cookieConfig.resolveAccessTokenInfo(request);
+		log.info("쿠키에서 추출한 액세스 토큰={}", accessToken);
 
-		if (header != null && header.startsWith(TOKEN_PREFIX)) {
-			String token = header.substring(7);
-			log.info("액세스 토큰={}", token);
+		if (accessToken != null && tokenProvider.validateToken(accessToken)) {
+			String email = tokenProvider.getEmail(accessToken);
+			log.info("현재 토큰 정보로 조회할 수 있는 이메일={}", email);
 
-			if (tokenProvider.validateToken(token)) {
-				String email = tokenProvider.getEmail(token);
-				log.info("현재 사용자 메일={}", email);
-
-				// 인증 객체 정보 저장
-				if (email != null) {
-					Authentication authentication = tokenProvider.getAuthentication(token);
-					SecurityContextHolder.getContext().setAuthentication(authentication);
-				}
+			if (email != null) {
+				Authentication authentication = tokenProvider.getAuthentication(accessToken);
+				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
 		}
 

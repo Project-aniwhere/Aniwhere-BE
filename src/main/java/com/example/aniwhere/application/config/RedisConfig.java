@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -40,5 +41,10 @@ public class RedisConfig {
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
 		return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host, port));
+	}
+
+	@Bean
+	public ValueOperations<String, String> valueOperations(RedisTemplate<String, String> redisTemplate) {
+		return redisTemplate.opsForValue();
 	}
 }

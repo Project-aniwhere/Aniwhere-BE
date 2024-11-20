@@ -1,7 +1,7 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
-import com.example.aniwhere.application.user.PrincipalOAuthDetailsService;
-import com.example.aniwhere.infrastructure.jwt.JwtTokenFilter;
+import com.example.aniwhere.service.user.PrincipalOAuthDetailsService;
+import com.example.aniwhere.application.jwt.JwtTokenFilter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -35,10 +41,10 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
-				.csrf(AbstractHttpConfigurer::disable)			// csrf 보안 사용 x
-				.formLogin(AbstractHttpConfigurer::disable)		// form login 사용 x
-				.httpBasic(AbstractHttpConfigurer::disable)		// httpBasic 사용 x
-				.sessionManagement(c ->							// 세션 사용 x
+				.csrf(AbstractHttpConfigurer::disable)
+				.formLogin(AbstractHttpConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable)
+				.sessionManagement(c ->
 						c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(
@@ -47,11 +53,12 @@ public class SecurityConfig {
 							 new AntPathRequestMatcher("/oauth2/authorization/kakao"),
 							 new AntPathRequestMatcher("/api/v1/oauth2/**"),
 							 new AntPathRequestMatcher("/login/**"),
-							 new AntPathRequestMatcher("/api/login"),
 							 new AntPathRequestMatcher("/api/token"),
 							 new AntPathRequestMatcher("/api/auth/**"),
+						     new AntPathRequestMatcher("/api/auth/email/**"),
 					 		 new AntPathRequestMatcher("/swagger-ui/**"),
-							 new AntPathRequestMatcher("/v3/api-docs/**")
+							 new AntPathRequestMatcher("/v3/api-docs/**"),
+							 new AntPathRequestMatcher("/api/kakaoreissue")
 						).permitAll()
 						.anyRequest().authenticated()
 				)
@@ -65,6 +72,21 @@ public class SecurityConfig {
 						.accessDeniedHandler(customAccessDeniedHandler))
 				.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
+	}
+
+	@Bean
+	public OAuth2AuthorizedClientManager authorizedClientManager(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientRepository authorizedClientRepository) {
+
+		OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
+																.authorizationCode()
+																.refreshToken()
+																.clientCredentials()
+																.password()
+																.build();
+
+		DefaultOAuth2AuthorizedClientManager authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientRepository);
+		authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+		return authorizedClientManager;
 	}
 
 	@Bean

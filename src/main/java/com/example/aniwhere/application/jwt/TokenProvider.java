@@ -1,24 +1,25 @@
-package com.example.aniwhere.infrastructure.jwt;
+package com.example.aniwhere.application.jwt;
 
-import com.example.aniwhere.application.cache.RedisService;
+import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.JwtToken;
 import com.example.aniwhere.domain.token.RefreshToken;
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.infrastructure.persistence.RefreshTokenRepository;
+import com.example.aniwhere.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
+
+import static com.example.aniwhere.domain.token.TokenType.REFRESH_TOKEN;
 
 @Slf4j
 @Component
@@ -28,6 +29,12 @@ public class TokenProvider {
 	private final JwtProperties jwtProperties;
 	private final RedisService redisService;
 	private final RefreshTokenRepository refreshTokenRepository;
+
+	public JwtToken generateJwtToken(User user) {
+		String accessToken = generateAccessToken(user);
+		String refreshToken = generateRefreshToken(user);
+		return new JwtToken(accessToken, refreshToken);
+	}
 
 	public String generateAccessToken(User user) {
 		Date now = new Date();
@@ -57,7 +64,7 @@ public class TokenProvider {
 				.signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
 				.compact();
 
-		redisService.saveRefreshToken(user.getEmail(), refreshToken);
+		redisService.saveToken(user.getEmail(), Map.of(REFRESH_TOKEN, refreshToken));
 
 		RefreshToken refreshTokenEntity = refreshTokenRepository.findByUserId(user.getId())
 				.map(entity -> entity.update(refreshToken))
@@ -89,21 +96,6 @@ public class TokenProvider {
 		Claims claims = getClaims(token);
 		Set<SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(Role.ROLE_USER.getName()));
 		return new UsernamePasswordAuthenticationToken(new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities), token, authorities);
-	}
-
-	public JwtToken resolveToken(HttpServletRequest request) {
-		String authorization = request.getHeader("Authorization");
-		String refreshToken = request.getHeader("Refresh-Token");
-
-		String accessToken = null;
-		if (StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")) {
-			accessToken = authorization.substring(7);
-		}
-
-		return JwtToken.builder()
-				.accessToken(accessToken)
-				.refreshToken(refreshToken)
-				.build();
 	}
 
 	public Long getUserId(String token) {

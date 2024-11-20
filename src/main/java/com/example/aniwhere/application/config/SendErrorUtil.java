@@ -1,18 +1,18 @@
-package com.example.aniwhere.infrastructure.config.util;
+package com.example.aniwhere.application.config;
 
-import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+
+import static com.example.aniwhere.global.error.ErrorCode.*;
 
 import java.io.IOException;
 
 public class SendErrorUtil {
 
 	public static void sendUnauthorizedErrorResponse(HttpServletResponse response, ObjectMapper objectMapper) throws IOException {
-		String errorResponse = objectMapper.writeValueAsString(
-				ErrorResponse.of(ErrorCode.UNAUTHORIZED.getMessage(), ErrorCode.UNAUTHORIZED.getCode()));
+		String errorResponse = objectMapper.writeValueAsString(ErrorResponse.of(UNAUTHORIZED));
 		response.setStatus(HttpStatus.UNAUTHORIZED.value());
 		writeErrorResponse(response, errorResponse);
 	}

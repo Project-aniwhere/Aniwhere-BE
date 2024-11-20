@@ -1,4 +1,4 @@
-package com.example.aniwhere.infrastructure.config;
+package com.example.aniwhere.application.config;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
