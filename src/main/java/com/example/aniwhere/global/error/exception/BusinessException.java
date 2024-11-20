@@ -1,20 +1,34 @@
 package com.example.aniwhere.global.error.exception;
 
 import com.example.aniwhere.global.error.ErrorCode;
+import static com.example.aniwhere.global.error.ErrorResponse.*;
+
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 비즈니스 로직 예외를 처리하기 위한 추상 클래스
+ */
 @Getter
-public class BusinessException extends RuntimeException {
+public abstract class BusinessException extends RuntimeException {
 
-	private ErrorCode errorCode;
+	private final ErrorCode errorCode;
+	private List<FieldError> errors = new ArrayList<>();
 
-	public BusinessException(String email, ErrorCode errorCode) {
-		super(email);
+	protected BusinessException(String message, ErrorCode errorCode) {
+		super(message);
 		this.errorCode = errorCode;
 	}
 
-	public BusinessException(ErrorCode errorCode) {
+	protected BusinessException(ErrorCode errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	protected BusinessException(ErrorCode errorCode, List<FieldError> errors) {
 		super(errorCode.getMessage());
 		this.errorCode = errorCode;
+		this.errors = errors;
 	}
 }
