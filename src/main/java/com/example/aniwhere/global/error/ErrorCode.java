@@ -17,11 +17,6 @@ public enum ErrorCode {
 	LOGIN_FAILURE(400, "C009", "이메일은 맞지만 패스워드가 일치하지 않습니다."),
 	INVALID_TOKEN(400, "C010", "유효하지 않은 토큰입니다."),
 	UNAUTHORIZED(401, "C011", "권한이 없습니다."),
-	NICKNAME_DUPLICATION(400, "C006", "중복된 메일입니다."),
-	NOT_FOUND_USER(400, "C007", "사용자를 찾을 수 없습니다."),
-	LOGIN_FAILURE(400, "C008", "이메일은 맞지만 패스워드가 일치하지 않습니다."),
-	INVALID_TOKEN(400, "C009", "유효하지 않은 토큰입니다."),
-	UNAUTHORIZED(401, "C010", "권한이 없습니다."),
 
 	NOT_FOUND_ANIME(400, "A001", "애니메이션을 찾을 수 없습니다."),
 
