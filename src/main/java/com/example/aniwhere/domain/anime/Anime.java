@@ -3,6 +3,7 @@ package com.example.aniwhere.domain.anime;
 import com.example.aniwhere.domain.casting.Casting;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.domain.review.Review;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -61,6 +62,7 @@ public class Anime {
     }
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Casting> castings;
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)

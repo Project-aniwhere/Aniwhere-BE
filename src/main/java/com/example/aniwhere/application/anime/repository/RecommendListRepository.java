@@ -2,6 +2,8 @@ package com.example.aniwhere.application.anime.repository;
 
 import com.example.aniwhere.domain.recommendList.RecommendList;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface RecommendListRepository extends JpaRepository<RecommendList, Integer> {
+@Repository
+public interface RecommendListRepository extends JpaRepository<RecommendList, Long> {
 }

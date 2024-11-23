@@ -16,8 +16,8 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class RecommendService {
-    RecommendListRepository recommendListRepository;
-    DivisionRepository divisionRepository;
+    private final RecommendListRepository recommendListRepository;
+    private final DivisionRepository divisionRepository;
 
 
     public List<RecommendList> getRecommendLists() {
@@ -29,7 +29,7 @@ public class RecommendService {
     }
 
     public void deleteRecommendList(long id) {
-        recommendListRepository.deleteById((int) id);
+        recommendListRepository.deleteById(id);
     }
 
     public RecommendList updateRecommendList(Long id, RecommendList recommendList) {

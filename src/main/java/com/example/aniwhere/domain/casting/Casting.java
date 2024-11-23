@@ -2,6 +2,7 @@ package com.example.aniwhere.domain.casting;
 
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.voiceactor.VoiceActor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class Casting {
     private Long castingId;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "anime_id", nullable = false)
     private Anime anime;
 
