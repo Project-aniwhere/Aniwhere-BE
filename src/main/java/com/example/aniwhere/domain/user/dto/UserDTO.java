@@ -3,8 +3,7 @@ package com.example.aniwhere.domain.user.dto;
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.Sex;
 import com.example.aniwhere.domain.user.User;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 public class UserDTO {
@@ -13,26 +12,30 @@ public class UserDTO {
 	@Setter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@AllArgsConstructor(access = AccessLevel.PROTECTED)
-	@Builder
 	public static class UserSignUpRequest {
 
-		@NotEmpty(message = "닉네임은 필수입니다.")
+		@NotNull(message = "닉네임은 필수입니다.")
 		private String nickname;
 
+		@NotNull(message = "이메일은 필수입니다.")
 		@Email(message = "이메일 형식이 올바르지 않습니다.")
 		private String email;
 
-		@NotEmpty(message = "비밀번호는 필수 입력 값입니다.")
+		@NotNull(message = "비밀번호는 필수 입력 값입니다.")
 		private String password;
 
-		@NotEmpty(message = "출생연도를 입력해주세요. Ex) 1995")
+		@Size(min = 4, max = 4, message = "생년은 4자리여야 합니다.")
 		private String birthyear;
 
-		@NotEmpty(message = "출생일자를 입력해주세요. Ex) 0101")
+		@Size(min = 4, max = 4, message = "출생일자는 4자리여야 합니다.")
 		private String birthday;
+
+		@NotNull(message = "2차 인증 코드는 필수입니다.")
+		private String authCode;
 
 		@ValidEnum(enumClass = Sex.class)
 		private Sex sex;
+
 		private final Role role = Role.ROLE_USER;
 	}
 
@@ -40,7 +43,6 @@ public class UserDTO {
 	@Setter
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@AllArgsConstructor(access = AccessLevel.PROTECTED)
-	@Builder
 	public static class UserSignUpResponse {
 		private Long id;
 		private String nickname;
@@ -70,7 +72,7 @@ public class UserDTO {
 		@Email(message = "이메일 형식이 올바르지 않습니다.")
 		private String email;
 
-		@NotEmpty(message = "비밀번호는 필수 입력 값입니다.")
+		@NotNull(message = "비밀번호는 필수 입력 값입니다.")
 		private String password;
 	}
 
