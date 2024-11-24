@@ -69,6 +69,9 @@ dependencies {
 
 	// Apache HttpComponents
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
+
+	//recommend
+	implementation group: 'com.github.haifengl', name: 'smile-core', version: '3.1.1'
 }
 
 tasks.named('test') {

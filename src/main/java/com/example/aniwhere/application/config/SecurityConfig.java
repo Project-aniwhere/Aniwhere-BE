@@ -31,48 +31,49 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Slf4j
 public class SecurityConfig {
 
-	private final JwtTokenFilter jwtTokenFilter;
-	private final PrincipalOAuthDetailsService principalOAuthDetailsService;
-	private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
-	private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
-	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-	private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final JwtTokenFilter jwtTokenFilter;
+    private final PrincipalOAuthDetailsService principalOAuthDetailsService;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.csrf(AbstractHttpConfigurer::disable)
-				.formLogin(AbstractHttpConfigurer::disable)
-				.httpBasic(AbstractHttpConfigurer::disable)
-				.sessionManagement(c ->
-						c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(
-							 new AntPathRequestMatcher("/"),
-							 new AntPathRequestMatcher("/favicon.ico"),
-							 new AntPathRequestMatcher("/oauth2/authorization/kakao"),
-							 new AntPathRequestMatcher("/api/v1/oauth2/**"),
-							 new AntPathRequestMatcher("/login/**"),
-							 new AntPathRequestMatcher("/api/token"),
-							 new AntPathRequestMatcher("/api/auth/**"),
-						     new AntPathRequestMatcher("/api/auth/email/**"),
-					 		 new AntPathRequestMatcher("/swagger-ui/**"),
-							 new AntPathRequestMatcher("/v3/api-docs/**"),
-							 new AntPathRequestMatcher("/api/kakaoreissue")
-						).permitAll()
-						.anyRequest().authenticated()
-				)
-				.oauth2Login(oauth2 -> oauth2
-						.userInfoEndpoint(userInfo -> userInfo
-								.userService(principalOAuthDetailsService))
-						.successHandler(customOAuth2SuccessHandler)
-						.failureHandler(customOAuth2FailureHandler))
-				.exceptionHandling(e -> e
-						.authenticationEntryPoint(customAuthenticationEntryPoint)
-						.accessDeniedHandler(customAccessDeniedHandler))
-				.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-				.build();
-	}
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)            // csrf 보안 사용 x
+                .formLogin(AbstractHttpConfigurer::disable)        // form login 사용 x
+                .httpBasic(AbstractHttpConfigurer::disable)        // httpBasic 사용 x
+                .sessionManagement(c ->                            // 세션 사용 x
+                        c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/"),
+                                new AntPathRequestMatcher("/favicon.ico"),
+                                new AntPathRequestMatcher("/oauth2/authorization/kakao"),
+                                new AntPathRequestMatcher("/api/v1/oauth2/**"),
+                                new AntPathRequestMatcher("/login/**"),
+                                new AntPathRequestMatcher("/api/login"),
+                                new AntPathRequestMatcher("/api/token"),
+                                new AntPathRequestMatcher("/api/auth/**"),
+                                new AntPathRequestMatcher("/swagger-ui/**"),
+                                new AntPathRequestMatcher("/v3/api-docs/**"),
+                                new AntPathRequestMatcher("/recommend"),
+                                new AntPathRequestMatcher("/anime/*")
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(principalOAuthDetailsService))
+                        .successHandler(customOAuth2SuccessHandler)
+                        .failureHandler(customOAuth2FailureHandler))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler))
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
 
 	@Bean
 	public OAuth2AuthorizedClientManager authorizedClientManager(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientRepository authorizedClientRepository) {
@@ -89,13 +90,13 @@ public class SecurityConfig {
 		return authorizedClientManager;
 	}
 
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-		return authenticationConfiguration.getAuthenticationManager();
-	}
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
