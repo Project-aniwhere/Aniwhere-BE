@@ -4,7 +4,7 @@ import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.division.Division;
 import com.example.aniwhere.domain.division.DivisionRepository;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.infrastructure.persistence.UserRepository;
+import com.example.aniwhere.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import smile.clustering.DBSCAN;

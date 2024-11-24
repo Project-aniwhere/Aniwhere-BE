@@ -6,6 +6,7 @@ import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.application.anime.repository.AnimeRepository;
 import com.example.aniwhere.domain.category.Category;
+import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.example.aniwhere.global.error.ErrorCode.NOT_FOUND_ANIME;
 
 @Service
 @Slf4j
@@ -55,7 +54,7 @@ public class AnimeService {
 
     public AnimeResponseDTO getAnimeById(long animeId) {
         Anime anime = animeRepository.findById(animeId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 애니메이션에 대한 정보를 찾을 수 없습니다.", NOT_FOUND_ANIME));
+                .orElseThrow(() -> new ResourceNotFoundException("해당 애니메이션에 대한 정보를 찾을 수 없습니다.", ErrorCode.NOT_FOUND_USER));
 
         List<AnimeResponseDTO.CastingDTO> castings = castingRepository.findCastingByAnime_animeId(animeId).stream()
                 .map(casting -> AnimeResponseDTO.CastingDTO.builder()

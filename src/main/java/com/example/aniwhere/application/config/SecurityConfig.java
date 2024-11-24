@@ -74,41 +74,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.csrf(AbstractHttpConfigurer::disable)
-				.formLogin(AbstractHttpConfigurer::disable)
-				.httpBasic(AbstractHttpConfigurer::disable)
-				.sessionManagement(c ->
-						c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(
-							 new AntPathRequestMatcher("/"),
-							 new AntPathRequestMatcher("/favicon.ico"),
-							 new AntPathRequestMatcher("/oauth2/authorization/kakao"),
-							 new AntPathRequestMatcher("/api/v1/oauth2/**"),
-							 new AntPathRequestMatcher("/login/**"),
-							 new AntPathRequestMatcher("/api/token"),
-							 new AntPathRequestMatcher("/api/auth/**"),
-						     new AntPathRequestMatcher("/api/auth/email/**"),
-					 		 new AntPathRequestMatcher("/swagger-ui/**"),
-							 new AntPathRequestMatcher("/v3/api-docs/**"),
-							 new AntPathRequestMatcher("/api/kakaoreissue")
-						).permitAll()
-						.anyRequest().authenticated()
-				)
-				.oauth2Login(oauth2 -> oauth2
-						.userInfoEndpoint(userInfo -> userInfo
-								.userService(principalOAuthDetailsService))
-						.successHandler(customOAuth2SuccessHandler)
-						.failureHandler(customOAuth2FailureHandler))
-				.exceptionHandling(e -> e
-						.authenticationEntryPoint(customAuthenticationEntryPoint)
-						.accessDeniedHandler(customAccessDeniedHandler))
-				.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-				.build();
-	}
 
 	@Bean
 	public OAuth2AuthorizedClientManager authorizedClientManager(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientRepository authorizedClientRepository) {
