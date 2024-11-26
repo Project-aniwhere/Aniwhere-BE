@@ -1,13 +1,12 @@
 package com.example.aniwhere.application.anime.controller;
 
 import com.example.aniwhere.application.anime.service.RecommendService;
-import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.recommendList.RecommendList;
+import com.example.aniwhere.domain.recommendList.dto.RecommendListDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +19,8 @@ public class AnimeRecommendController {
     private final RecommendService recommendService;
 
     @GetMapping("/recommend")
-    public ResponseEntity<List<RecommendList>> getAnimeRecommendList() {
-        List<RecommendList> lists = recommendService.getRecommendLists();
+    public ResponseEntity<List<RecommendListDTO>> getAnimeRecommendList() {
+        List<RecommendListDTO> lists = recommendService.getRecommendLists();
         return ResponseEntity.ok(lists);
     }
 

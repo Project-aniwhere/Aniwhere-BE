@@ -1,16 +1,21 @@
 package com.example.aniwhere.application.anime.service;
 
+import com.example.aniwhere.application.anime.controller.AnimeRecommendController;
 import com.example.aniwhere.application.anime.repository.RecommendListRepository;
 import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
 import com.example.aniwhere.domain.division.Division;
 import com.example.aniwhere.domain.division.DivisionRepository;
 import com.example.aniwhere.domain.recommendList.RecommendList;
+import com.example.aniwhere.domain.recommendList.dto.RecommendListDTO;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,8 +25,26 @@ public class RecommendService {
     private final DivisionRepository divisionRepository;
 
 
-    public List<RecommendList> getRecommendLists() {
-        return recommendListRepository.findAll();
+    public List<RecommendListDTO> getRecommendLists() {
+        List<RecommendList> recommendLists = recommendListRepository.findAll();
+
+        return recommendLists.stream()
+                .map(recommendList -> RecommendListDTO.builder()
+                        .id(recommendList.getId())
+                        .title(recommendList.getTitle())
+                        .description(recommendList.getDescription())
+                        .animes(recommendList.getAnimes().stream()
+                                .map(anime -> AnimeSummaryDTO.builder()
+                                        .animeId(anime.getAnimeId())
+                                        .title(anime.getTitle())
+                                        .poster(anime.getPoster())
+                                        .build()
+                                )
+                                .collect(Collectors.toList())
+                        )
+                        .build()
+                )
+                .collect(Collectors.toList());
     }
 
     public RecommendList insertRecommendList(RecommendList recommendList) {
