@@ -71,7 +71,7 @@ public class UserService {
 
 	private void validateSignupRequest(UserSignUpRequest request) {
 		if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-			throw new UserException(NOT_FOUND_USER);
+			throw new UserException(DUPLICATED_EMAIL);
 		}
 
 		String authCodeKey = buildAuthCodeKey(request.getEmail());
