@@ -57,6 +57,9 @@ public class UserService {
 	 * @param request
 	 * @return User
 	 */
+	// 이메일 인증 -> 회원가입
+	// 이메일을 발송받고 인증하는데 소요되는 시간 5분..
+	// 백엔드에서 발급해주는 인증번호의 15~20분 -> 회원가입 성공 후 레디스에 저장된 키가 삭제되도록 조치
 	@Transactional
 	public User signup(UserSignUpRequest request) {
 		validateSignupRequest(request);
@@ -119,7 +122,7 @@ public class UserService {
 		String authCode = createAuthCode();
 		String authCodeKey = buildAuthCodeKey(toEmail);
 		emailService.sendEmail(toEmail, EMAIL_VERIFICATION_TITLE, authCode);
-		redisService.saveAuthCode(authCodeKey, authCode, Duration.ofMillis(this.authCodeExpirationMillis));
+		redisService.saveAuthCode(authCodeKey, authCode, Duration.ofMinutes(15));
 	}
 
 	/**
