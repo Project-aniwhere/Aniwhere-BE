@@ -3,6 +3,7 @@ package com.example.aniwhere.controller.user;
 import com.example.aniwhere.service.user.UserService;
 import com.example.aniwhere.global.error.ErrorResponse;
 import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.service.user.validator.CheckNicknameValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +32,14 @@ import static com.example.aniwhere.domain.user.dto.UserDTO.*;
 @RequiredArgsConstructor
 public class UserApiController {
 
+	private final CheckNicknameValidator checkNicknameValidator;
 	private final UserService userService;
 	private final CookieConfig cookieConfig;
+
+	@InitBinder
+	protected void validatorBinder(WebDataBinder binder) {
+		binder.addValidators(checkNicknameValidator);
+	}
 
 	@Operation(
 			summary = "회원 가입",

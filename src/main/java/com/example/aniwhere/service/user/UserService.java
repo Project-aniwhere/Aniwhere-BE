@@ -140,7 +140,6 @@ public class UserService {
 		String savedCode = redisService.getAuthCode(authCodeKey);
 
 		if (savedCode.equals(request.code())) {
-			redisService.deleteAuthCode(authCodeKey);
 			return new EmailVerificationResponse("인증이 완료되었습니다.", true);
 		}
 
