@@ -56,9 +56,9 @@ public class MailApiController {
 			)
 	})
 	@PostMapping("/auth/email/verifications-requests")
-	public ResponseEntity<String> sendMessage(@RequestBody EmailAuthenticationRequest request) {
+	public ResponseEntity<EmailSendResponse> sendMessage(@RequestBody EmailAuthenticationRequest request) {
 		userService.sendCodeToEmail(request.email());
-		return ResponseEntity.ok("인증 코드가 포함된 메일이 발송되었습니다.");
+		return ResponseEntity.ok(new EmailSendResponse("해당 이메일로 2차 인증 코드가 발송되었습니다."));
 	}
 
 	@Operation(
@@ -112,7 +112,7 @@ public class MailApiController {
 					)
 			)
 	})
-	@GetMapping("/auth/email/verifications")
+	@PostMapping("/auth/email/verifications")
 	public ResponseEntity<EmailVerificationResponse> verificationEmail(@RequestBody EmailVerificationRequest request) {
 		return ResponseEntity.ok(userService.verifiedCode(request));
 	}
