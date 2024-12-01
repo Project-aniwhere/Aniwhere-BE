@@ -83,4 +83,11 @@ public class UserDTO {
 		private String message;
 		private boolean isVerified;
 	}
+
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	public static class EmailSendResponse {
+		private String message;
+	}
 }
