@@ -1,10 +1,8 @@
 package com.example.aniwhere.service.anime;
 
-import com.example.aniwhere.repository.CastingRepository;
-import com.example.aniwhere.repository.ReviewRepository;
+import com.example.aniwhere.repository.*;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.controller.dto.AnimeDTO.*;
-import com.example.aniwhere.repository.AnimeRepository;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
@@ -12,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +22,7 @@ public class AnimeService {
     private final AnimeRepository animeRepository;
     private final CastingRepository castingRepository;
     private final ReviewRepository reviewRepository;
+    private final EpisodeRepository episodeRepository;
 
     public Map<String, List<QuarterAnimeResponseDTO>> getAnimeByYearAndQuarter(int year, int quarter) {
         List<Anime> animes = animeRepository.findByYearAndQuarter(year, quarter);
@@ -52,6 +53,18 @@ public class AnimeService {
                 .build();
     }
 
+    public BigDecimal calculateAverageRating(List<AnimeResponseDTO.ReviewDTO> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal totalRating = reviews.stream()
+                .map(AnimeResponseDTO.ReviewDTO::getRating)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalRating.divide(new BigDecimal(reviews.size()), 2, RoundingMode.HALF_UP);
+    }
+
     public AnimeResponseDTO getAnimeById(long animeId) {
         Anime anime = animeRepository.findById(animeId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 애니메이션에 대한 정보를 찾을 수 없습니다.", ErrorCode.NOT_FOUND_USER));
@@ -75,6 +88,20 @@ public class AnimeService {
                         .build())
                 .collect(Collectors.toList());
 
+        BigDecimal averageRating = calculateAverageRating(reviews);
+
+        List<AnimeResponseDTO.EpisodeDTO> episodes = episodeRepository.findCastingByAnime_animeId(animeId).stream()
+                .map(episode -> AnimeResponseDTO.EpisodeDTO.builder()
+                        .episodeId(episode.getEpisodeId())
+                        .episodeNumber(episode.getEpisodeNumber())
+                        .episodeStory(episode.getEpisodeStory())
+                        .title(episode.getTitle())
+                        .releaseDate(episode.getReleaseDate())
+                        .duration(episode.getDuration())
+                        .stillImage(episode.getStillImage())
+                        .build())
+                .toList();
+
         return AnimeResponseDTO.builder()
                 .animeId(anime.getAnimeId())
                 .title(anime.getTitle())
@@ -87,7 +114,7 @@ public class AnimeService {
                 .studio(anime.getStudio())
                 .releaseDate(anime.getReleaseDate())
                 .endDate(anime.getEndDate())
-                .episodes(anime.getEpisodes())
+                .episodeNum(anime.getEpisodesNum())
                 .runningTime(anime.getRunningTime())
                 .status(anime.getStatus())
                 .trailer(anime.getTrailer())
@@ -97,12 +124,13 @@ public class AnimeService {
                 .isAdult(anime.getIsAdult())
                 .duration(anime.getDuration())
                 .weekday(anime.getWeekday())
-                .anilistId(anime.getAnilistId())
                 .categories(anime.getCategories().stream()
-                        .map(Category::getCategoryName) // Category ID만 추출
+                        .map(Category::getCategoryName)
                         .collect(Collectors.toSet()))
                 .castings(castings)
                 .reviews(reviews)
+                .episodes(episodes)
+                .averageRating(averageRating)
                 .build();
     }
 }

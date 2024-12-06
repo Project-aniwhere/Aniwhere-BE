@@ -40,7 +40,7 @@ public class AnimeDTO {
         private String studio;
         private LocalDate releaseDate;
         private LocalDate endDate;
-        private Integer episodes;
+        private Integer episodeNum;
         private String runningTime;
         private String status;
         private String trailer;
@@ -50,11 +50,29 @@ public class AnimeDTO {
         private Boolean isAdult;
         private String duration;
         private String weekday;
-        private String anilistId;
-        private Set<String> categories;
+        private String backgroundImage;
+        private Set<String> categories; //장르
 
-        private List<CastingDTO> castings;  // 캐스팅 정보 목록
+        private List<CastingDTO> castings;  // 등장인물 정보 목록
         private List<ReviewDTO> reviews;    // 리뷰 목록
+
+        private List<EpisodeDTO> episodes;
+
+        private BigDecimal averageRating;
+
+        @Getter
+        @Setter
+        @Builder
+        public static class EpisodeDTO {
+            private Long episodeId;
+            private Integer episodeNumber;
+            private String title;
+            private LocalDate releaseDate;
+            private Integer duration;
+            private String episodeStory;
+            private String stillImage;
+
+        }
 
         @Getter
         @Setter
