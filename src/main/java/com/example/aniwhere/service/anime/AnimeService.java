@@ -1,10 +1,10 @@
-package com.example.aniwhere.application.anime.service;
+package com.example.aniwhere.service.anime;
 
-import com.example.aniwhere.application.casting.repository.CastingRepository;
-import com.example.aniwhere.application.review.repository.ReviewRepository;
+import com.example.aniwhere.repository.CastingRepository;
+import com.example.aniwhere.repository.ReviewRepository;
 import com.example.aniwhere.domain.anime.Anime;
-import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
-import com.example.aniwhere.application.anime.repository.AnimeRepository;
+import com.example.aniwhere.controller.dto.AnimeDTO.*;
+import com.example.aniwhere.repository.AnimeRepository;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;

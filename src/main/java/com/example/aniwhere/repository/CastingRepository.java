@@ -1,4 +1,4 @@
-package com.example.aniwhere.application.casting.repository;
+package com.example.aniwhere.repository;
 
 import com.example.aniwhere.domain.casting.Casting;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.example.aniwhere.application.anime.repository;
+package com.example.aniwhere.repository;
 
 import com.example.aniwhere.domain.anime.Anime;
 import org.springframework.data.jpa.repository.JpaRepository;

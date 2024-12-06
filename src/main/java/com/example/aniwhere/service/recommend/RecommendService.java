@@ -1,14 +1,12 @@
-package com.example.aniwhere.application.anime.service;
+package com.example.aniwhere.service.recommend;
 
-import com.example.aniwhere.application.anime.controller.AnimeRecommendController;
-import com.example.aniwhere.application.anime.repository.RecommendListRepository;
+import com.example.aniwhere.repository.RecommendListRepository;
 import com.example.aniwhere.domain.anime.Anime;
-import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
+import com.example.aniwhere.controller.dto.AnimeSummaryDTO;
 import com.example.aniwhere.domain.division.Division;
 import com.example.aniwhere.domain.division.DivisionRepository;
 import com.example.aniwhere.domain.recommendList.RecommendList;
-import com.example.aniwhere.domain.recommendList.dto.RecommendListDTO;
-import lombok.Builder;
+import com.example.aniwhere.controller.dto.RecommendListDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

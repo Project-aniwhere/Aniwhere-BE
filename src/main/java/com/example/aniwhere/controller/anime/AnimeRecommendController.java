@@ -1,8 +1,8 @@
-package com.example.aniwhere.application.anime.controller;
+package com.example.aniwhere.controller.anime;
 
-import com.example.aniwhere.application.anime.service.RecommendService;
+import com.example.aniwhere.service.recommend.RecommendService;
 import com.example.aniwhere.domain.recommendList.RecommendList;
-import com.example.aniwhere.domain.recommendList.dto.RecommendListDTO;
+import com.example.aniwhere.controller.dto.RecommendListDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

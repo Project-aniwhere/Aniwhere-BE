@@ -1,6 +1,5 @@
-package com.example.aniwhere.domain.recommendList.dto;
+package com.example.aniwhere.controller.dto;
 
-import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
 import lombok.Builder;
 
 import java.util.List;

@@ -1,13 +1,12 @@
-package com.example.aniwhere.application.anime.controller;
+package com.example.aniwhere.controller.anime;
 
-import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
-import com.example.aniwhere.application.anime.service.AnimeService;
+import com.example.aniwhere.controller.dto.AnimeDTO.*;
+import com.example.aniwhere.service.anime.AnimeService;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.InvalidInputException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

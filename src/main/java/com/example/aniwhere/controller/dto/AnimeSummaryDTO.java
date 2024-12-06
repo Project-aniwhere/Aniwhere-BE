@@ -1,8 +1,6 @@
-package com.example.aniwhere.domain.anime.dto;
+package com.example.aniwhere.controller.dto;
 
 import lombok.Builder;
-
-import java.util.List;
 
 @Builder
 public class AnimeSummaryDTO {

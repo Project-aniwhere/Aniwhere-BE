@@ -1,4 +1,4 @@
-package com.example.aniwhere.application.anime.service;
+package com.example.aniwhere.service.recommend;
 
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.division.Division;
