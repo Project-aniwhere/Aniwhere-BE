@@ -1,5 +1,6 @@
-package com.example.aniwhere.domain.division;
+package com.example.aniwhere.repository;
 
+import com.example.aniwhere.domain.division.Division;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,5 +1,7 @@
-package com.example.aniwhere.domain.division;
+package com.example.aniwhere.service.recommend;
 
+import com.example.aniwhere.domain.division.Division;
+import com.example.aniwhere.repository.DivisionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

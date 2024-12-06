@@ -4,7 +4,7 @@ import com.example.aniwhere.repository.RecommendListRepository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.controller.dto.AnimeSummaryDTO;
 import com.example.aniwhere.domain.division.Division;
-import com.example.aniwhere.domain.division.DivisionRepository;
+import com.example.aniwhere.repository.DivisionRepository;
 import com.example.aniwhere.domain.recommendList.RecommendList;
 import com.example.aniwhere.controller.dto.RecommendListDTO;
 import lombok.RequiredArgsConstructor;
