@@ -33,14 +33,14 @@ public class Anime {
     private String studio;
     private LocalDate releaseDate;
     private LocalDate endDate;
-    private Integer episodes = 0;
+    private Integer episodes;
     private String runningTime;
     private String status;
     private String trailer;
     private String description;
     private String poster;
-    private Integer airingQuarter = 0;
-    private Boolean isAdult = false;
+    private Integer airingQuarter;
+    private Boolean isAdult;
     private String duration;
     private String weekday;
     private String anilistId;

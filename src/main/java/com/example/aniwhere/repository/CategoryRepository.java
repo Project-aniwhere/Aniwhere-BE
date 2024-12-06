@@ -1,4 +1,4 @@
-package com.example.aniwhere.application.category.repository;
+package com.example.aniwhere.repository;
 
 import com.example.aniwhere.domain.category.Category;
 import org.springframework.data.jpa.repository.JpaRepository;

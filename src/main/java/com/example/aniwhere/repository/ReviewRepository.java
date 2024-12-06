@@ -1,4 +1,4 @@
-package com.example.aniwhere.application.review.repository;
+package com.example.aniwhere.repository;
 
 import com.example.aniwhere.domain.review.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
