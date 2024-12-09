@@ -20,18 +20,18 @@ public enum ErrorCode {
 	BAD_CREDENTIALS(400, "C005", "bad credentials"),
 
 	// member
-	INVALID_TOKEN(400, "M001", "유효하지 않은 토큰입니다."),
-	INVALID_CREDENTIAL(400, "M002", "유효하지 않은 인증 정보입니다."),
+	INVALID_TOKEN(401, "M001", "유효하지 않은 토큰입니다."),
+	INVALID_CREDENTIAL(401, "M002", "유효하지 않은 인증 정보입니다."),
 	DUPLICATED_NICKNAME(400, "M003", "중복된 닉네임입니다."),
 	DUPLICATED_EMAIL(400, "M004", "중복된 메일입니다."),
-	EMAIL_VERIFICATION_FAIL(400, "M005", "이메일 인증에 실패하셨습니다."),
+	EMAIL_VERIFICATION_FAIL(400, "M005", "인증에 실패했습니다."),
 	VERIFICATION_CODE_MISMATCH(400, "M006", "인증 코드가 일치하지 않습니다."),
 	PASSWORD_MISMATCH(400, "M007", "비밀번호가 일치하지 않습니다."),
 	NOT_FOUND_USER(404, "M008", "사용자를 찾을 수 없습니다."),
 	UNAUTHORIZED(401, "M009", "권한이 없습니다."),
 
 	// token
-	INVALID_REFRESH_TOKEN(500, "T001", "유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요."),
+	INVALID_REFRESH_TOKEN(401, "T001", "유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요."),
 	NOT_FOUND_REFRESH_TOKEN(500, "T002", "리프레시 토큰을 찾을 수 없습니다. 다시 로그인해주세요."),
 
 	// external
