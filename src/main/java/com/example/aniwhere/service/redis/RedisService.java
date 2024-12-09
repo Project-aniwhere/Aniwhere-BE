@@ -99,27 +99,7 @@ public class RedisService {
 	 * @return void
 	 */
 	public void deleteOAuthToken(String email, TokenType type) {
-		deleteKey(buildKey(type.getPrefix(), email));
-	}
-
-	/**
-	 * 레디스에 인증 코드를 저장
-	 * @param email
-	 * @param authCode
-	 * @param duration
-	 * @return void
-	 */
-	public void saveAuthCode(String email, String authCode, Duration duration) {
-		setValueWithExpiration(email, authCode, duration);
-	}
-
-	/**
-	 * 레디스에 저장된 인증 코드를 조회
-	 * @param authCode
-	 * @return String
-	 */
-	public String getAuthCode(String authCode) {
-		return getValue(authCode);
+		deleteFromRedis(buildKey(type.getPrefix(), email));
 	}
 
 	/**
@@ -133,42 +113,36 @@ public class RedisService {
 	}
 
 	/**
-	 * 레디스에 저장된 인증 코드가 존재하는지 확인
-	 * @param authCode
-	 * @return boolean
-	 */
-	public boolean hasAuthCode(String authCode) {
-		return Boolean.TRUE.equals(redisTemplate.hasKey(authCode));
-	}
-
-	/**
-	 * 레디스에 저장된 인증 코드를 삭제
-	 * @param authCode
-	 * @return void
-	 */
-	public void deleteAuthCode(String authCode) {
-		deleteKey(authCode);
-	}
-
-	/**
 	 * 레디스에 저장된 토큰을 삭제
 	 * @param email
 	 * @param type
 	 * @return void
 	 */
 	public void deleteToken(String email, TokenType type) {
-		deleteKey(buildKey(type.getPrefix(), email));
+		deleteFromRedis(buildKey(type.getPrefix(), email));
+	}
+
+	public void setValue(String key, String value, Duration duration) {
+		setValueWithExpiration(key, value, duration);
+	}
+
+	public String getValue(String key) {
+		return getValueFromRedis(key);
+	}
+
+	public void deleteValue(String key) {
+		deleteFromRedis(key);
 	}
 
 	private void setValueWithExpiration(String key, String value, Duration duration) {
-		redisTemplate.opsForValue().set(key, value, duration);
+		operations.set(key, value, duration);
 	}
 
-	private String getValue(String key) {
-		return redisTemplate.opsForValue().get(key);
+	private String getValueFromRedis(String key) {
+		return operations.get(key);
 	}
 
-	private void deleteKey(String key) {
+	private void deleteFromRedis(String key) {
 		redisTemplate.delete(key);
 	}
 
