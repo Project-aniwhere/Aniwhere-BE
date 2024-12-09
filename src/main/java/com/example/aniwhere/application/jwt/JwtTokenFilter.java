@@ -29,6 +29,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			"/api/auth/email/verifications-requests",
 			"/api/auth/email/verifications",
 			"/api/kakaoreissue",
+			"/api/v3/api-docs/**",         // OpenAPI 스펙 문서
+			"/api/swagger-ui/**",          // Swagger UI 접근
 			"/error",
 			"/favicon.ico",
 			"/"
@@ -52,7 +54,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 		String requestURI = request.getRequestURI();
 		log.info("요청 URI={}", requestURI);
 
-		if (WHITE_LIST.contains(requestURI)) {
+		if (isWhitelisted(requestURI)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -75,5 +77,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 		}
 
 		filterChain.doFilter(request, response);
+	}
+
+	private boolean isWhitelisted(String requestURI) {
+		return WHITE_LIST.stream()
+				.anyMatch(pattern -> {
+					if (pattern.endsWith("/**")) {
+						String prefix = pattern.substring(0, pattern.length() - 3);
+						return requestURI.startsWith(prefix);
+					}
+					return pattern.equals(requestURI);
+				});
 	}
 }
