@@ -3,25 +3,20 @@ package com.example.aniwhere.service.user;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.JwtToken;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.domain.user.dto.EmailVerificationRequest;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.application.config.CookieConfig;
 import com.example.aniwhere.repository.UserRepository;
 import com.example.aniwhere.application.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Duration;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import static com.example.aniwhere.domain.token.TokenType.REFRESH_TOKEN;
 import static com.example.aniwhere.domain.user.dto.UserDTO.*;
@@ -33,62 +28,47 @@ import static com.example.aniwhere.global.error.ErrorCode.*;
 @Transactional(readOnly = true)
 public class UserService {
 
-	private static final String AUTH_CODE_PREFIX = "AuthCode: ";
 	private static final String SELF_PROVIDER = "self";
-	private static final int AUTH_CODE_LENGTH = 6;
-	private static final String EMAIL_VERIFICATION_TITLE = "Aniwhere 이메일 2차 인증 코드 메일입니다.";
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final RedisService redisService;
 	private final TokenProvider tokenProvider;
-	private final EmailService emailService;
+	private final EmailVerificationService emailVerificationService;
 	private final CookieConfig cookieConfig;
-
-	@Value("${spring.mail.auth-code-expiration-millis}")
-	private long authCodeExpirationMillis;
 
 	/**
 	 * 스프링 시큐리티 기반의 회원가입
 	 	* 요청 검증 -> 입력한 이메일의 계정이 존재하는지를 검증
-	 	* 요청이 올바르다면 인증 코드를 생성하여 레디스에 저장
-	    	* 인증 코드가 레디스에 없다면 이메일 인증을 하지 않은 것으로 간주
-	 		* 인증 코드가 레디스에 있다면 인증 코드 검증
+	 	* 레디스에 인증 코드를 저장하는 방식은 그대로 가져가되 이 역시 유효 코드 만료 시간인 5분으로 그대로 설정
+	    * 개선 : 이메일 인증 결과를 활용 + DTO에서 끼기 애매한 인증 코드 필드를 제거할 수 있음
 	 * @param request
 	 * @return User
 	 */
-	// 이메일 인증 -> 회원가입
-	// 이메일을 발송받고 인증하는데 소요되는 시간 5분..
-	// 백엔드에서 발급해주는 인증번호의 15~20분 -> 회원가입 성공 후 레디스에 저장된 키가 삭제되도록 조치
 	@Transactional
 	public User signup(UserSignUpRequest request) {
 		validateSignupRequest(request);
 
 		User newUser = createUser(request);
 		User savedUser = userRepository.save(newUser);
-
-		String authCodeKey = buildAuthCodeKey(request.getEmail());
-		redisService.deleteAuthCode(authCodeKey);
+		emailVerificationService.deleteVerificationResult(request.getEmail());
 		return savedUser;
 	}
 
 	private void validateSignupRequest(UserSignUpRequest request) {
+		checkDuplicateEmail(request);
+		validateEmailVerification(request.getEmail());
+	}
+
+	private void checkDuplicateEmail(UserSignUpRequest request) {
 		if (userRepository.findByEmail(request.getEmail()).isPresent()) {
 			throw new UserException(DUPLICATED_EMAIL);
 		}
-
-		String authCodeKey = buildAuthCodeKey(request.getEmail());
-		validateEmailVerification(authCodeKey, request.getAuthCode());
 	}
 
-	private void validateEmailVerification(String authCodeKey, String submittedCode) {
-		if (!redisService.hasAuthCode(authCodeKey)) {
+	private void validateEmailVerification(String email) {
+		if (!emailVerificationService.isEmailVerified(email)) {
 			throw new UserException(EMAIL_VERIFICATION_FAIL);
-		}
-
-		String savedCode = redisService.getAuthCode(authCodeKey);
-		if (!savedCode.equals(submittedCode)) {
-			throw new UserException(VERIFICATION_CODE_MISMATCH);
 		}
 	}
 
@@ -111,46 +91,6 @@ public class UserService {
 		return createTokenCookies(jwtToken);
 	}
 
-	/**
-	 * 이메일 인증 코드 발송
-	 * @param toEmail
-	 * @return void
-	 */
-	public void sendCodeToEmail(String toEmail) {
-		this.checkDuplicatedEmail(toEmail);		// 우선적으로 이메일 중복 검사 체크
-
-		String authCode = createAuthCode();
-		String authCodeKey = buildAuthCodeKey(toEmail);
-		emailService.sendEmail(toEmail, EMAIL_VERIFICATION_TITLE, authCode);
-		redisService.saveAuthCode(authCodeKey, authCode, Duration.ofMinutes(15));
-	}
-
-	/**
-	 * 2차 인증 코드 일치 여부 검증
-	 * @param request
-	 * @return
-	 */
-	public EmailVerificationResponse verifiedCode(EmailVerificationRequest request) {
-		String authCodeKey = buildAuthCodeKey(request.email());
-
-		if (!redisService.hasAuthCode(authCodeKey)) {
-			return new EmailVerificationResponse("인증 시간이 만료되었습니다. 인증 번호를 다시 요청해주세요.", false);
-		}
-
-		String savedCode = redisService.getAuthCode(authCodeKey);
-
-		if (savedCode.equals(request.code())) {
-			return new EmailVerificationResponse("인증이 완료되었습니다.", true);
-		}
-
-		return new EmailVerificationResponse("인증에 실패했습니다.", false);
-	}
-
-	private void checkDuplicatedEmail(String email) {
-		if (userRepository.findByEmail(email).isPresent()) {
-			throw new UserException(DUPLICATED_EMAIL);
-		}
-	}
 
 	private User createUser(UserSignUpRequest request) {
 		return User.builder()
@@ -180,23 +120,5 @@ public class UserService {
 	private User findUserByEmail(String email) {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
-	}
-
-	private String buildAuthCodeKey(String email) {
-		return AUTH_CODE_PREFIX + email;
-	}
-
-	private String createAuthCode() {
-		try {
-			Random random = SecureRandom.getInstanceStrong();
-			StringBuilder builder = new StringBuilder();
-			for (int i = 0; i < AUTH_CODE_LENGTH; i++) {
-				builder.append(random.nextInt(10));
-			}
-			return builder.toString();
-		} catch (NoSuchAlgorithmException e) {
-			log.debug("랜덤 생성 오류");
-			throw new RuntimeException("랜덤 생성 오류");
-		}
 	}
 }
