@@ -48,10 +48,10 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
         return weekdayOrder.stream()
                 .filter(groupedByWeekday::containsKey) // 없는 요일 제외
                 .collect(Collectors.toMap(
-                        weekdayToCode::get, // 요일(String)을 숫자(Integer)로 변환
-                        groupedByWeekday::get, // 기존 그룹 데이터
+                        weekdayToCode::get,
+                        groupedByWeekday::get,
                         (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new // 순서 유지
+                        LinkedHashMap::new
                 ));
     }
 }

@@ -89,7 +89,7 @@ public class AnimeDTO {
     @Getter
     @Setter
     @Builder
-    public static class WeekdayAnimeDTO {//분기별 애니메이션 반환
+    public static class WeekdayAnimeDTO {//요일별 애니메이션 반환
         private Long animeId;
         private String title;
         private String poster;
