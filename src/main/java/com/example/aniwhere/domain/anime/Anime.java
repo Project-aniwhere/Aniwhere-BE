@@ -2,6 +2,7 @@ package com.example.aniwhere.domain.anime;
 
 import com.example.aniwhere.domain.casting.Casting;
 import com.example.aniwhere.domain.category.Category;
+import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.review.Review;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -9,6 +10,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -76,4 +78,14 @@ public class Anime {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories;
+
+    @OneToMany(mappedBy = "anime")
+    private List<Episodes> episodesList = new ArrayList<Episodes>();
+
+    public void addEpisodes(Episodes episodes) {
+        this.episodesList.add(episodes);
+        if (episodes.getAnime() != this) {
+            episodes.registerAnime(this);
+        }
+    }
 }
