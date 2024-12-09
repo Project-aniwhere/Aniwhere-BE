@@ -30,7 +30,7 @@ public class CookieConfig {
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
-				if (ACCESS_TOKEN.getPrefix().equals(cookie.getName())) {
+				if (ACCESS_TOKEN.getDescription().equals(cookie.getName())) {
 					return cookie.getValue();
 				}
 			}

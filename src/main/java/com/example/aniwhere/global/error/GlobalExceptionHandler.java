@@ -23,32 +23,36 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler
 	protected ResponseEntity<ErrorResponse> handleBadCredentialException(BadCredentialsException e) {
+		log.error("Bad credentials exception: {}", e.getMessage());
 		final ErrorResponse response = ErrorResponse.of(BAD_CREDENTIALS);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler
 	protected ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-		final ErrorResponse response = ErrorResponse.of(e);
+		log.error("Method argument type mismatch exception: {}", e.getMessage());
+		final ErrorResponse response = ErrorResponse.of(INVALID_TYPE_VALUE);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler
 	protected ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+		log.error("Http request method not supported exception: {}", e.getMessage());
 		final ErrorResponse response = ErrorResponse.of(METHOD_NOT_ALLOWED);
 		return new ResponseEntity<>(response, HttpStatus.METHOD_NOT_ALLOWED);
 	}
 
 	@ExceptionHandler
 	protected ResponseEntity<ErrorResponse> handleBindException(BindException e) {
-		final ErrorResponse response = ErrorResponse.of(INVALID_INPUT_VALUE, e.getBindingResult());
+		log.error("Bind exception: {}", e.getMessage());
+		final ErrorResponse response = ErrorResponse.of(INVALID_INPUT_VALUE);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler
 	protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
 		final ErrorCode errorCode = e.getErrorCode();
-		final ErrorResponse response = ErrorResponse.of(errorCode, e.getErrors());
+		final ErrorResponse response = ErrorResponse.of(errorCode);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
 	}
 
@@ -59,7 +63,6 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	//입력값 잘못된 경우
 	@ExceptionHandler(InvalidInputException.class)
 	public ResponseEntity<ErrorResponse> handleInvalidInputException(InvalidInputException e) {
 		log.error("InvalidInputException", e);

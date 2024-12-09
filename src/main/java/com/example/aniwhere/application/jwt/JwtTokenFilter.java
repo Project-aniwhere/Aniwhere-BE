@@ -1,10 +1,9 @@
 package com.example.aniwhere.application.jwt;
 
 import com.example.aniwhere.application.config.CookieConfig;
-import com.example.aniwhere.domain.token.TokenType;
+import com.example.aniwhere.global.error.exception.UserException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-import static com.example.aniwhere.domain.token.TokenType.ACCESS_TOKEN;
+import static com.example.aniwhere.global.error.ErrorCode.*;
 
 @Slf4j
 @Component
@@ -60,6 +59,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
 		String accessToken = cookieConfig.resolveAccessTokenInfo(request);
 		log.info("쿠키에서 추출한 액세스 토큰={}", accessToken);
+
+		if (accessToken == null) {
+			throw new UserException(UNAUTHORIZED);
+		}
 
 		if (accessToken != null && tokenProvider.validateToken(accessToken)) {
 			String email = tokenProvider.getEmail(accessToken);
