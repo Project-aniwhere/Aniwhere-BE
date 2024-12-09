@@ -1,5 +1,6 @@
 package com.example.aniwhere.application.anime.service;
 
+import com.example.aniwhere.application.anime.repository.AnimeCustomRepository;
 import com.example.aniwhere.application.casting.repository.CastingRepository;
 import com.example.aniwhere.application.review.repository.ReviewRepository;
 import com.example.aniwhere.domain.anime.Anime;
@@ -8,9 +9,11 @@ import com.example.aniwhere.application.anime.repository.AnimeRepository;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,6 +107,25 @@ public class AnimeService {
                 .castings(castings)
                 .reviews(reviews)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, List<WeekdayAnimeDTO>> getAnimeWeekdayList() {
+        Map<Integer, List<Anime>> groupedByWeekday = animeRepository.findAllGroupedByWeekday();
+        return groupedByWeekday.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(anime -> WeekdayAnimeDTO.builder()
+                                        .animeId(anime.getAnimeId())
+                                        .title(anime.getTitle())
+                                        .poster(anime.getPoster())
+                                        .weekday(anime.getWeekday())
+                                        .build())
+                                .collect(Collectors.toList()),
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
     }
 }
 
