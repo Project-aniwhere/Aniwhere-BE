@@ -1,5 +1,7 @@
 package com.example.aniwhere.application.anime.controller;
 
+import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.domain.anime.dto.AnimeDTO;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.application.anime.service.AnimeService;
 import com.example.aniwhere.global.error.ErrorCode;
@@ -43,6 +45,12 @@ public class AnimeController {
     @GetMapping("/anime/{id}")
     public ResponseEntity<AnimeResponseDTO> getAnimeById(@PathVariable int id) {
         AnimeResponseDTO animeResponse = animeService.getAnimeById(id);
+        return ResponseEntity.ok(animeResponse);
+    }
+
+    @GetMapping("/anime/weekday")
+    public ResponseEntity<Map<Integer, List<WeekdayAnimeDTO>>> getWeekdayAnimeList(){
+        Map<Integer, List<WeekdayAnimeDTO>> animeResponse = animeService.getAnimeWeekdayList();
         return ResponseEntity.ok(animeResponse);
     }
 
