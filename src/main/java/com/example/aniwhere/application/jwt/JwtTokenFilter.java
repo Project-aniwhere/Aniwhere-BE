@@ -31,6 +31,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			"/api/kakaoreissue",
 			"/api/v3/api-docs/**",         // OpenAPI 스펙 문서
 			"/api/swagger-ui/**",          // Swagger UI 접근
+			"/api/episodes/**",
 			"/error",
 			"/favicon.ico",
 			"/"

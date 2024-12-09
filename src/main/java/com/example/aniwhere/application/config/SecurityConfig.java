@@ -59,7 +59,8 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/recommend"),
                                 new AntPathRequestMatcher("/anime/*"),
 								new AntPathRequestMatcher("/api/v3/api-docs/**"),
-								new AntPathRequestMatcher("/api/swagger-ui/**")
+								new AntPathRequestMatcher("/api/swagger-ui/**"),
+								new AntPathRequestMatcher("/api/episodes/**")
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
