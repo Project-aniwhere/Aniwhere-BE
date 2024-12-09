@@ -2,7 +2,6 @@ package com.example.aniwhere.domain.user.dto;
 
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.Sex;
-import com.example.aniwhere.domain.user.User;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -30,37 +29,10 @@ public class UserDTO {
 		@Size(min = 4, max = 4, message = "출생일자는 4자리여야 합니다.")
 		private String birthday;
 
-		@NotNull(message = "2차 인증 코드는 필수입니다.")
-		private String authCode;
-
 		@ValidEnum(enumClass = Sex.class)
 		private Sex sex;
 
 		private final Role role = Role.ROLE_USER;
-	}
-
-	@Getter
-	@Setter
-	@NoArgsConstructor(access = AccessLevel.PROTECTED)
-	@AllArgsConstructor(access = AccessLevel.PROTECTED)
-	public static class UserSignUpResponse {
-		private Long id;
-		private String nickname;
-		private String email;
-		private String birthday;
-		private String birthyear;
-		private Sex sex;
-		private Role role;
-
-		public UserSignUpResponse(User user) {
-			this.id = user.getId();
-			this.email = user.getEmail();
-			this.nickname = user.getNickname();
-			this.birthday = user.getBirthday();
-			this.birthyear = user.getBirthyear();
-			this.sex = user.getSex();
-			this.role = user.getRole();
-		}
 	}
 
 	@Getter
@@ -82,12 +54,5 @@ public class UserDTO {
 	public static class EmailVerificationResponse {
 		private String message;
 		private boolean isVerified;
-	}
-
-	@Getter
-	@Setter
-	@AllArgsConstructor
-	public static class EmailSendResponse {
-		private String message;
 	}
 }
