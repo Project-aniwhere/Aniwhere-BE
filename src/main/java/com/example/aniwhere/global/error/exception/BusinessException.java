@@ -15,7 +15,6 @@ import java.util.List;
 public abstract class BusinessException extends RuntimeException {
 
 	private final ErrorCode errorCode;
-	private List<FieldError> errors = new ArrayList<>();
 
 	protected BusinessException(String message, ErrorCode errorCode) {
 		super(message);
@@ -24,11 +23,5 @@ public abstract class BusinessException extends RuntimeException {
 
 	protected BusinessException(ErrorCode errorCode) {
 		this.errorCode = errorCode;
-	}
-
-	protected BusinessException(ErrorCode errorCode, List<FieldError> errors) {
-		super(errorCode.getMessage());
-		this.errorCode = errorCode;
-		this.errors = errors;
 	}
 }

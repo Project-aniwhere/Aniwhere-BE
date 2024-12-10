@@ -14,6 +14,7 @@ import static com.example.aniwhere.global.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class EmailService {
 
+	private static final String EMAIL_VERIFICATION_TITLE = "Aniwhere 이메일 2차 인증 코드 메일입니다.";
 	private final JavaMailSender emailSender;
 
 	/**
@@ -37,8 +38,8 @@ public class EmailService {
 	private SimpleMailMessage createEmailForm(String toEmail, String title, String text) {
 		SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
 		simpleMailMessage.setTo(toEmail);
-		simpleMailMessage.setSubject(title);
-		simpleMailMessage.setText("2차 인증 번호는 " + text + "입니다.");
+		simpleMailMessage.setSubject(EMAIL_VERIFICATION_TITLE);
+		simpleMailMessage.setText("인증 코드는 " + text + "입니다.");
 		return simpleMailMessage;
 	}
 }

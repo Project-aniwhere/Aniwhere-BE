@@ -4,29 +4,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      aniwhere_db:
-        condition: service_healthy
       aniwhere_redis:
         condition: service_healthy
-    restart: unless-stopped
-
-  aniwhere_db:
-    container_name: mysql
-    image: mysql:latest
-    volumes:
-      - mysql_data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=aniwhere
-      - MYSQL_DATABASE=aniwhere
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping" ]
-      interval: 5s
-      retries: 10
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
     restart: unless-stopped
 
   aniwhere_redis:
@@ -39,7 +18,3 @@ services:
       interval: 5s
       retries: 10
     restart: unless-stopped
-
-volumes:
-  mysql_data:
-    driver: local

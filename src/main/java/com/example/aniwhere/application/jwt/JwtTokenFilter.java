@@ -1,10 +1,9 @@
 package com.example.aniwhere.application.jwt;
 
 import com.example.aniwhere.application.config.CookieConfig;
-import com.example.aniwhere.domain.token.TokenType;
+import com.example.aniwhere.global.error.exception.UserException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-import static com.example.aniwhere.domain.token.TokenType.ACCESS_TOKEN;
+import static com.example.aniwhere.global.error.ErrorCode.*;
 
 @Slf4j
 @Component
@@ -30,6 +29,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			"/api/auth/email/verifications-requests",
 			"/api/auth/email/verifications",
 			"/api/kakaoreissue",
+			"/api/v3/api-docs/**",         // OpenAPI 스펙 문서
+			"/api/swagger-ui/**",          // Swagger UI 접근
 			"/error",
 			"/favicon.ico",
 			"/"
@@ -53,13 +54,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 		String requestURI = request.getRequestURI();
 		log.info("요청 URI={}", requestURI);
 
-		if (WHITE_LIST.contains(requestURI)) {
+		if (isWhitelisted(requestURI)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		String accessToken = cookieConfig.resolveAccessTokenInfo(request);
 		log.info("쿠키에서 추출한 액세스 토큰={}", accessToken);
+
+		if (accessToken == null) {
+			throw new UserException(UNAUTHORIZED);
+		}
 
 		if (accessToken != null && tokenProvider.validateToken(accessToken)) {
 			String email = tokenProvider.getEmail(accessToken);
@@ -72,5 +77,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 		}
 
 		filterChain.doFilter(request, response);
+	}
+
+	private boolean isWhitelisted(String requestURI) {
+		return WHITE_LIST.stream()
+				.anyMatch(pattern -> {
+					if (pattern.endsWith("/**")) {
+						String prefix = pattern.substring(0, pattern.length() - 3);
+						return requestURI.startsWith(prefix);
+					}
+					return pattern.equals(requestURI);
+				});
 	}
 }

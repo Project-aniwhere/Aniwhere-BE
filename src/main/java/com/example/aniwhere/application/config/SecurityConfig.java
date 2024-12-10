@@ -41,10 +41,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(AbstractHttpConfigurer::disable)            // csrf 보안 사용 x
-                .formLogin(AbstractHttpConfigurer::disable)        // form login 사용 x
-                .httpBasic(AbstractHttpConfigurer::disable)        // httpBasic 사용 x
-                .sessionManagement(c ->                            // 세션 사용 x
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .sessionManagement(c ->
                         c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -56,10 +56,10 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/login"),
                                 new AntPathRequestMatcher("/api/token"),
                                 new AntPathRequestMatcher("/api/auth/**"),
-                                new AntPathRequestMatcher("/swagger-ui/**"),
-                                new AntPathRequestMatcher("/v3/api-docs/**"),
                                 new AntPathRequestMatcher("/recommend"),
-                                new AntPathRequestMatcher("/anime/*")
+                                new AntPathRequestMatcher("/anime/*"),
+								new AntPathRequestMatcher("/api/v3/api-docs/**"),
+								new AntPathRequestMatcher("/api/swagger-ui/**")
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

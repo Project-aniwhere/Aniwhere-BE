@@ -103,4 +103,14 @@ public class AnimeDTO {
             private String name;                 // 성우 이름
         }
     }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class WeekdayAnimeDTO {//요일별 애니메이션 반환
+        private Long animeId;
+        private String title;
+        private String poster;
+        private String weekday;
+    }
 }

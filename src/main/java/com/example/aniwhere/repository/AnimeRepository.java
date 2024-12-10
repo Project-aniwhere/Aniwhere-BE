@@ -9,8 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface  AnimeRepository extends JpaRepository<Anime, Long> {
+public interface  AnimeRepository extends JpaRepository<Anime, Long>, AnimeCustomRepository {
     //DB에 year가 없어서 releaseDate에서 변환
     @Query("SELECT a FROM Anime a WHERE YEAR(a.releaseDate) = :year AND a.airingQuarter = :quarter")
     List<Anime> findByYearAndQuarter(@Param("year") int year, @Param("quarter") int quarter);
+
 }

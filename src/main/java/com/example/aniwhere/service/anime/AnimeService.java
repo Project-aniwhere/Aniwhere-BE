@@ -6,9 +6,11 @@ import com.example.aniwhere.controller.dto.AnimeDTO.*;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -81,7 +83,7 @@ public class AnimeService {
         List<AnimeResponseDTO.ReviewDTO> reviews = reviewRepository.findByAnime_AnimeId(animeId).stream()
                 .map(review -> AnimeResponseDTO.ReviewDTO.builder()
                         .reviewId(review.getReviewId())
-                        .userId(review.getUser().getId().toString())
+                        .userId(review.getUser().getProviderId().toString())
                         .rating(review.getRating())
                         .content(review.getContent())
                         .createdAt(review.getCreatedAt())
@@ -132,6 +134,25 @@ public class AnimeService {
                 .episodes(episodes)
                 .averageRating(averageRating)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, List<WeekdayAnimeDTO>> getAnimeWeekdayList() {
+        Map<Integer, List<Anime>> groupedByWeekday = animeRepository.findAllGroupedByWeekday();
+        return groupedByWeekday.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(anime -> WeekdayAnimeDTO.builder()
+                                        .animeId(anime.getAnimeId())
+                                        .title(anime.getTitle())
+                                        .poster(anime.getPoster())
+                                        .weekday(anime.getWeekday())
+                                        .build())
+                                .collect(Collectors.toList()),
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
     }
 }
 
