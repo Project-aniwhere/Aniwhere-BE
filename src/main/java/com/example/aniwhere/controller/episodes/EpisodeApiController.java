@@ -1,6 +1,7 @@
 package com.example.aniwhere.controller.episodes;
 
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewRequest;
+import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.global.common.ApiResponse;
 import com.example.aniwhere.service.episodes.EpisodeService;
@@ -39,5 +40,14 @@ public class EpisodeApiController {
 	public ResponseEntity<ApiResponse> addReview(@PathVariable(name = "episodeId") Long episodeId, @RequestBody EpisodeReviewRequest request) {
 		episodesService.addReview(episodeId, request);
         return ResponseEntity.status(201).body(ApiResponse.of(201, "리뷰 등록 성공"));
+	}
+
+	@Operation(
+            summary = "에피소드에 대한 리뷰 조회",
+            description = "에피소드별 리뷰를 조회할 수 있습니다."
+    )
+	@GetMapping("/episodes/{episodeId}/reviews")
+	public Page<EpisodeReviewResponse> getEpisodeReviews(@PathVariable(name = "episodeId") Long episodeId, Pageable pageable) {
+		return episodesService.getEpisodeReviews(episodeId, pageable);
 	}
 }

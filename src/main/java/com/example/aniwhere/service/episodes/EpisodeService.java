@@ -2,6 +2,8 @@ package com.example.aniwhere.service.episodes;
 
 import com.example.aniwhere.domain.episodeReviews.EpisodeReviews;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewRequest;
+import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
+import com.example.aniwhere.domain.episodeReviews.dto.QEpisodeReviewResponse;
 import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.domain.episodes.dto.QEpisodesDto;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
+import static com.example.aniwhere.domain.episodeReviews.QEpisodeReviews.episodeReviews;
 import static com.example.aniwhere.domain.episodes.QEpisodes.episodes;
 import static com.example.aniwhere.domain.anime.QAnime.anime;
 import static com.example.aniwhere.global.error.ErrorCode.*;
@@ -85,5 +88,27 @@ public class EpisodeService {
 
 		episodeReviewRepository.save(episodeReviews);
 		return ApiResponse.of(201, "에피소드에 대한 리뷰가 생성되었습니다.");
+	}
+
+	public Page<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, Pageable pageable) {
+		List<EpisodeReviewResponse> reviews = queryFactory
+				.select(new QEpisodeReviewResponse(
+						episodeReviews.id,
+						episodeReviews.rating,
+						episodeReviews.content,
+						episodeReviews.user.id
+				))
+				.from(episodeReviews)
+				.where(episodeReviews.episodes.id.eq(episodeId))
+				.offset(pageable.getOffset())
+				.limit(pageable.getPageSize())
+				.fetch();
+
+		JPAQuery<EpisodeReviews> countQuery = queryFactory
+				.select(episodeReviews)
+				.from(episodeReviews)
+				.where(episodeReviews.episodes.id.eq(episodeId));
+
+		return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchCount);
 	}
 }
