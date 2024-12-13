@@ -80,7 +80,7 @@ public class Anime {
     private Set<Category> categories;
 
     @OneToMany(mappedBy = "anime")
-    private List<Episodes> episodesList = new ArrayList<Episodes>();
+    private final List<Episodes> episodesList = new ArrayList<Episodes>();
 
     public void addEpisodes(Episodes episodes) {
         this.episodesList.add(episodes);
