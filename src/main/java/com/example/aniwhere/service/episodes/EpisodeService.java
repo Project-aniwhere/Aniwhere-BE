@@ -1,8 +1,17 @@
 package com.example.aniwhere.service.episodes;
 
+import com.example.aniwhere.domain.episodeReviews.EpisodeReviews;
+import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewRequest;
 import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.domain.episodes.dto.QEpisodesDto;
+import com.example.aniwhere.domain.user.User;
+import com.example.aniwhere.global.common.ApiResponse;
+import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
+import com.example.aniwhere.global.error.exception.UserException;
+import com.example.aniwhere.repository.UserRepository;
+import com.example.aniwhere.repository.episodes.EpisodesRepository;
+import com.example.aniwhere.repository.episodesReview.EpisodeReviewRepository;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -12,19 +21,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 import static com.example.aniwhere.domain.episodes.QEpisodes.episodes;
 import static com.example.aniwhere.domain.anime.QAnime.anime;
+import static com.example.aniwhere.global.error.ErrorCode.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class EpisodesService {
+public class EpisodeService {
 
 	private final JPAQueryFactory queryFactory;
+	private final UserRepository userRepository;
+	private final EpisodeReviewRepository episodeReviewRepository;
+	private final EpisodesRepository episodesRepository;
 
 	public Page<EpisodesDto> getEpisodes(Long animeId, Pageable pageable) {
 		List<EpisodesDto> episodesList = queryFactory
@@ -51,5 +65,25 @@ public class EpisodesService {
 				.leftJoin(episodes.anime, anime)
 				.where(episodes.anime.animeId.eq(animeId));
 		return PageableExecutionUtils.getPage(episodesList, pageable, countQuery::fetchCount);
+	}
+
+	@Transactional
+	public ApiResponse addReview(Long episodeId, @RequestBody EpisodeReviewRequest request) {
+
+		Episodes episode = episodesRepository.findById(episodeId)
+				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
+
+		User user = userRepository.findById(request.getUserId())
+				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+		EpisodeReviews episodeReviews = EpisodeReviews.builder()
+				.episodes(episode)
+				.user(user)
+				.rating(request.getRating())
+				.content(request.getContent())
+				.build();
+
+		episodeReviewRepository.save(episodeReviews);
+		return ApiResponse.of(201, "에피소드에 대한 리뷰가 생성되었습니다.");
 	}
 }
