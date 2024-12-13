@@ -8,7 +8,6 @@ import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.domain.episodes.dto.QEpisodesDto;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.global.common.ApiResponse;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.UserRepository;
@@ -71,7 +70,7 @@ public class EpisodeService {
 	}
 
 	@Transactional
-	public ApiResponse addReview(Long episodeId, @RequestBody EpisodeReviewRequest request) {
+	public void addReview(Long episodeId, @RequestBody EpisodeReviewRequest request) {
 
 		Episodes episode = episodesRepository.findById(episodeId)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
@@ -87,7 +86,6 @@ public class EpisodeService {
 				.build();
 
 		episodeReviewRepository.save(episodeReviews);
-		return ApiResponse.of(201, "에피소드에 대한 리뷰가 생성되었습니다.");
 	}
 
 	public Page<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, Pageable pageable) {
