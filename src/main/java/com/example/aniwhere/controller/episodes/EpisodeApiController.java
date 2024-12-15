@@ -4,6 +4,8 @@ import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewRequest;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.global.common.ApiResponse;
+import com.example.aniwhere.repository.episodes.EpisodesRepository;
+import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
 import com.example.aniwhere.service.episodes.EpisodeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,14 +24,17 @@ import org.springframework.web.bind.annotation.*;
 public class EpisodeApiController {
 
 	private final EpisodeService episodesService;
+	private final EpisodesRepository episodesRepository;
+	private final EpisodesReviewRepository episodeReviewRepository;
 
 	@Operation(
 			summary = "애니메이션 ID값에 대한 전체 에피소드 조회",
 			description = "특정 애니메이션의 모든 에피소드를 페이지 단위로 조회합니다."
 	)
-	@GetMapping("/episodes/{animeId}")
-	public Page<EpisodesDto> getEpisodes(@PathVariable(name = "animeId") Long animeId, Pageable pageable) {
-		return episodesService.getEpisodes(animeId, pageable);
+	@GetMapping("/animes/{animeId}/episodes")
+	public ResponseEntity<Page<EpisodesDto>> getEpisodes(@PathVariable(name = "animeId") Long animeId, Pageable pageable) {
+		Page<EpisodesDto> episodes = episodesRepository.getEpisodes(animeId, pageable);
+		return ResponseEntity.ok(episodes);
 	}
 
 	@Operation(
@@ -47,7 +52,8 @@ public class EpisodeApiController {
             description = "에피소드별 리뷰를 조회할 수 있습니다."
     )
 	@GetMapping("/episodes/{episodeId}/reviews")
-	public Page<EpisodeReviewResponse> getEpisodeReviews(@PathVariable(name = "episodeId") Long episodeId, Pageable pageable) {
-		return episodesService.getEpisodeReviews(episodeId, pageable);
+	public ResponseEntity<Page<EpisodeReviewResponse>> getEpisodeReviews(@PathVariable(name = "episodeId") Long episodeId, Pageable pageable) {
+		Page<EpisodeReviewResponse> episodeReviews = episodeReviewRepository.getEpisodeReviews(episodeId, pageable);
+		return ResponseEntity.ok(episodeReviews);
 	}
 }
