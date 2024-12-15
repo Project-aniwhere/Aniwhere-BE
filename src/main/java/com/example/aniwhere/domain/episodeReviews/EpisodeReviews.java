@@ -6,8 +6,6 @@ import com.example.aniwhere.global.common.Common;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @Entity
 @Getter
 @Table(name = "episode_reviews")
@@ -23,14 +21,14 @@ public class EpisodeReviews extends Common {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
-	@Column(name = "rating", precision = 10, scale = 2)
-	private BigDecimal rating;
+	@Column(name = "rating", nullable = false)
+	private Double rating;
 
 	@Column(name = "content")
 	private String content;
 
 	@Builder
-	private EpisodeReviews(Episodes episodes, User user, BigDecimal rating, String content) {
+	private EpisodeReviews(Episodes episodes, User user, Double rating, String content) {
 		this.episodes = episodes;
 		this.user = user;
         this.rating = rating;
