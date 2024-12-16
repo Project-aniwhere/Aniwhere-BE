@@ -17,7 +17,7 @@ import static com.example.aniwhere.domain.episodeReviews.QEpisodeReviews.episode
 
 @Repository
 @RequiredArgsConstructor
-public class EpisodesRepositoryImpl implements EpisodesReviewRepositoryCustom {
+public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
 
