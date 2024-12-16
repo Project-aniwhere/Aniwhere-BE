@@ -1,4 +1,4 @@
-package com.example.aniwhere.service.episodes;
+package com.example.aniwhere.repository.episodes;
 
 import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
@@ -6,26 +6,23 @@ import com.example.aniwhere.domain.episodes.dto.QEpisodesDto;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static com.example.aniwhere.application.anime.repository.AnimeCustomRepositoryImpl.anime;
 import static com.example.aniwhere.domain.episodes.QEpisodes.episodes;
-import static com.example.aniwhere.domain.anime.QAnime.anime;
 
-@Slf4j
-@Service
+@Repository
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class EpisodesService {
+public class EpisodeRepositoryImpl implements EpisodesRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
 
+	@Override
 	public Page<EpisodesDto> getEpisodes(Long animeId, Pageable pageable) {
 		List<EpisodesDto> episodesList = queryFactory
 				.select(new QEpisodesDto(
@@ -50,6 +47,7 @@ public class EpisodesService {
 				.from(episodes)
 				.leftJoin(episodes.anime, anime)
 				.where(episodes.anime.animeId.eq(animeId));
+
 		return PageableExecutionUtils.getPage(episodesList, pageable, countQuery::fetchCount);
 	}
 }
