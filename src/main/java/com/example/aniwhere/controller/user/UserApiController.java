@@ -1,82 +1,33 @@
 package com.example.aniwhere.controller.user;
 
-import com.example.aniwhere.global.common.ApiResponse;
-import com.example.aniwhere.service.user.UserService;
-import com.example.aniwhere.application.config.CookieConfig;
-import com.example.aniwhere.service.user.validator.CheckNicknameValidator;
+import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
+import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import static com.example.aniwhere.domain.user.dto.UserDTO.*;
-
-@Slf4j
 @RestController
 @RequestMapping("/api")
-@Tag(name = "User", description = "유저 관련 API")
+@Tag(name = "User", description = "사용자 관련 API")
 @RequiredArgsConstructor
 public class UserApiController {
 
-	private final CheckNicknameValidator checkNicknameValidator;
-	private final UserService userService;
-	private final CookieConfig cookieConfig;
-
-	@InitBinder(value = "userSignUpRequest")	// 회원가입 시에만 적용되는 바인더
-	protected void validatorBinder(WebDataBinder binder) {
-		binder.addValidators(checkNicknameValidator);
-	}
+	private final EpisodesReviewRepository episodesReviewRepository;
 
 	@Operation(
-			summary = "회원 가입",
-			description = "새로운 사용자를 등록합니다."
+			summary = "사용자의 에피소드 리뷰 목록",
+			description = "특정 사용자가 작성한 에피소드 리뷰 목록을 조회합니다."
 	)
-	@PostMapping("/auth/signup")
-	public ResponseEntity<ApiResponse> signup(@Valid @RequestBody UserSignUpRequest request) {
-		userService.signup(request);
-		return ResponseEntity.status(201)
-				.body(ApiResponse.of(201, "회원가입 처리 완료"));
-
-	}
-
-	@Operation(
-			summary = "로그인",
-			description = "이메일과 비밀번호로 로그인합니다."
-	)
-	@PostMapping("/auth/login")
-	public ResponseEntity<ApiResponse> login(@Valid @RequestBody UserSignInRequest request, HttpServletResponse response) {
-
-		List<ResponseCookie> responseCookies = userService.signin(request);
-		responseCookies.forEach(cookie -> response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()));
-
-		return ResponseEntity.ok()
-				.body(ApiResponse.of(200, "로그인 처리 완료"));
-	}
-
-	@Operation(
-			summary = "로그아웃",
-			description = "쿠키의 수명을 0으로 지정하여 무효화합니다."
-	)
-	@PostMapping("/auth/logout")
-	public ResponseEntity<ApiResponse> logout() {
-
-		ResponseCookie accessTokenCookie = cookieConfig.expireAccessTokenCookie();
-		System.out.println(accessTokenCookie);
-		ResponseCookie refreshTokenCookie = cookieConfig.expireRefreshTokenCookie();
-		System.out.println(refreshTokenCookie);
-
-		return ResponseEntity.ok()
-				.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-				.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-				.body(ApiResponse.of(200, "로그아웃 처리 완료"));
+	@GetMapping("/users/{userId}/episode-reviews")
+	public ResponseEntity<Page<EpisodeReviewResponse>> getUserEpisodeReviews(@PathVariable Long userId, Pageable pageable) {
+		Page<EpisodeReviewResponse> reviews = episodesReviewRepository.getUserEpisodeReviews(userId, pageable);
+		return ResponseEntity.ok(reviews);
 	}
 }
