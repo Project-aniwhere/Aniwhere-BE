@@ -43,4 +43,27 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 
 		return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchCount);
 	}
+
+	@Override
+	public Page<EpisodeReviewResponse> getUserEpisodeReviews(Long userId, Pageable pageable) {
+		List<EpisodeReviewResponse> reviews = queryFactory
+				.select(new QEpisodeReviewResponse(
+						episodeReviews.id,
+						episodeReviews.rating,
+						episodeReviews.content,
+						episodeReviews.user.id
+				))
+				.from(episodeReviews)
+				.where(episodeReviews.user.id.eq(userId))
+				.offset(pageable.getOffset())
+				.limit(pageable.getPageSize())
+				.fetch();
+
+		JPAQuery<EpisodeReviews> countQuery = queryFactory
+				.select(episodeReviews)
+				.from(episodeReviews)
+				.where(episodeReviews.user.id.eq(userId));
+
+		return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchCount);
+	}
 }
