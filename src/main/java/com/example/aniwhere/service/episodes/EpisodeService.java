@@ -33,7 +33,7 @@ public class EpisodeService {
 		Episodes episode = episodesRepository.findById(episodeId)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
 
-		User user = userRepository.findById(request.getUserId())
+		User user = userRepository.findByNickname(request.getNickname())
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
 		EpisodeReviews episodeReviews = EpisodeReviews.builder()
