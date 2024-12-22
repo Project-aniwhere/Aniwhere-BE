@@ -41,7 +41,7 @@ public enum ErrorCode {
 	// episodes
 	NOT_FOUND_EPISODE(404, "EP001", "해당 에피소드를 찾을 수 없습니다.");
 
-	private int status;
+	private final int status;
 	private final String code;
 	private final String message;
 }
