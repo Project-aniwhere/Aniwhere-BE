@@ -1,6 +1,5 @@
 package com.example.aniwhere.global.error.exception;
 
-import com.example.aniwhere.domain.token.TokenType;
 import com.example.aniwhere.global.error.ErrorCode;
 import lombok.Getter;
 
@@ -10,10 +9,7 @@ import lombok.Getter;
 @Getter
 public class TokenException extends BusinessException {
 
-	private final TokenType tokenType;
-
-	public TokenException(ErrorCode errorCode, TokenType tokenType) {
+	public TokenException(ErrorCode errorCode) {
 		super(errorCode);
-		this.tokenType = tokenType;
 	}
 }
