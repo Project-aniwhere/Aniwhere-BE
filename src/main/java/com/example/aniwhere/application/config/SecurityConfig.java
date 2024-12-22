@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/login"),
                                 new AntPathRequestMatcher("/api/token"),
                                 new AntPathRequestMatcher("/api/auth/**"),
+								new AntPathRequestMatcher("/api/animes/**"),
                                 new AntPathRequestMatcher("/recommend"),
                                 new AntPathRequestMatcher("/anime/*"),
 								new AntPathRequestMatcher("/api/v3/api-docs/**"),
