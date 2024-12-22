@@ -16,10 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
 import java.util.Set;
-
-import static com.example.aniwhere.domain.token.TokenType.REFRESH_TOKEN;
 
 @Slf4j
 @Component
@@ -64,7 +61,7 @@ public class TokenProvider {
 				.signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
 				.compact();
 
-		redisService.saveToken(user.getEmail(), Map.of(REFRESH_TOKEN, refreshToken));
+		redisService.saveRefreshToken(user.getEmail(), refreshToken);
 
 		RefreshToken refreshTokenEntity = refreshTokenRepository.findByUserId(user.getId())
 				.map(entity -> entity.update(refreshToken))
