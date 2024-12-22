@@ -23,8 +23,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-import static com.example.aniwhere.domain.token.TokenType.*;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -35,14 +33,6 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 	private final CookieConfig cookieConfig;
 	private final OAuth2AuthorizedClientService authorizedClientService;
 
-	/**
-	 * OAuth2 로그인 성공 시 호출되는 메서드
-	 * @param request
-	 * @param response
-	 * @param authentication
-	 * @throws IOException
-	 * @throws ServletException
-	 */
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 		log.info("OAuth2 Login 성공");
@@ -51,8 +41,8 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 		User user = extractUserInfoFromAuthentication(authentication);
 		OAuthToken oAuthToken = extractOAuthTokens(authentication);
 
-		redisService.saveOAuthToken(user.getEmail(), oAuthToken.accessToken(), OAUTH_ACCESS_TOKEN);
-		redisService.saveOAuthToken(user.getEmail(), oAuthToken.refreshToken(), OAUTH_REFRESH_TOKEN);
+		redisService.saveOAuthAccessToken(user.getEmail(), oAuthToken.accessToken());
+		redisService.saveOAuthRefreshToken(user.getEmail(), oAuthToken.refreshToken());
 
 		JwtToken jwtToken = tokenProvider.generateJwtToken(user);
 		setTokenCookies(response, jwtToken);
@@ -79,8 +69,8 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 	}
 
 	private void setTokenCookies(HttpServletResponse response, JwtToken jwtToken) {
-		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie(jwtToken.accessToken());
-		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie(jwtToken.refreshToken());
+		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie("access_token", jwtToken.accessToken());
+		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie("refresh_token", jwtToken.refreshToken());
 
 		response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 		response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
