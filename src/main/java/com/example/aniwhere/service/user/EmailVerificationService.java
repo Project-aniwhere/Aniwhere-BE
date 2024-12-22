@@ -35,9 +35,10 @@ public class EmailVerificationService {
 	 * @param email
 	 */
 	public void sendVerificationCode(String email) {
+
 		String authCode = createAuthCode();
 		emailService.sendEmail(email, EMAIL_VERIFICATION_TITLE, authCode);
-		redisService.setValue(AUTH_CODE_PREFIX + email, authCode, getDuration(authCodeExpirationMillis));
+		redisService.saveCode(AUTH_CODE_PREFIX + email, authCode, getDuration(authCodeExpirationMillis));
 	}
 
 	/**
@@ -47,7 +48,7 @@ public class EmailVerificationService {
 	 */
 	public EmailVerificationResponse verifyCode(EmailVerificationRequest request) {
 		String authCodeKey = buildAuthCodeKey(request.email());
-		String savedCode = redisService.getValue(AUTH_CODE_PREFIX + request.email());
+		String savedCode = redisService.getCode(AUTH_CODE_PREFIX + request.email());
 
 		// 인증 코드 만료 여부 검사
 		if (savedCode == null) {
@@ -56,8 +57,8 @@ public class EmailVerificationService {
 
 		// 인증 코드 일치 여부 검사
 		if (savedCode.equals(request.code())) {
-			redisService.deleteValue(AUTH_CODE_PREFIX + request.email());
-			redisService.setValue(EMAIL_VERIFICATION_PREFIX + request.email(), "true", getDuration(authCodeExpirationMillis));
+			redisService.deleteCode(AUTH_CODE_PREFIX + request.email());
+			redisService.saveCode(EMAIL_VERIFICATION_PREFIX + request.email(), "true", getDuration(authCodeExpirationMillis));
 			return new EmailVerificationResponse("인증 성공", true);
 		}
 
@@ -66,7 +67,7 @@ public class EmailVerificationService {
 
 		// 검증 결과 저장 및 응답 반환
 		if (isVerified) {
-			redisService.deleteValue(authCodeKey);
+			redisService.deleteCode(authCodeKey);
 			saveVerificationResult(request.email(), true);
 			log.info("이메일 인증 성공 - 이메일: {}", request.email());
 			return new EmailVerificationResponse("인증 성공", true);
@@ -82,7 +83,7 @@ public class EmailVerificationService {
 	 */
 	private void saveVerificationResult(String email, boolean isVerified) {
 		String verificationKey = buildVerificationKey(email);
-		redisService.setValue(verificationKey, String.valueOf(isVerified), getDuration(authCodeExpirationMillis));
+		redisService.saveCode(verificationKey, String.valueOf(isVerified), getDuration(authCodeExpirationMillis));
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class EmailVerificationService {
 	 */
 	public boolean isEmailVerified(String email) {
 		String verificationKey = buildVerificationKey(email);
-		String result = redisService.getValue(verificationKey);
+		String result = redisService.getCode(verificationKey);
 		return "true".equals(result);
 	}
 
@@ -102,7 +103,7 @@ public class EmailVerificationService {
 	 */
 	public void deleteVerificationResult(String email) {
 		String verificationKey = buildVerificationKey(email);
-		redisService.deleteValue(verificationKey);
+		redisService.deleteCode(verificationKey);
 		log.info("인증 결과 삭제 완료 - 이메일: {}", email);
 	}
 
