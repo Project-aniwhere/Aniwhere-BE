@@ -1,5 +1,6 @@
 package com.example.aniwhere.service.user;
 
+import com.example.aniwhere.domain.user.dto.UserSignInResult;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.JwtToken;
 import com.example.aniwhere.domain.user.User;
@@ -15,10 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import static com.example.aniwhere.domain.token.TokenType.REFRESH_TOKEN;
 import static com.example.aniwhere.domain.user.dto.UserDTO.*;
 import static com.example.aniwhere.global.error.ErrorCode.*;
 
@@ -37,16 +37,8 @@ public class UserService {
 	private final EmailVerificationService emailVerificationService;
 	private final CookieConfig cookieConfig;
 
-	/**
-	 * 스프링 시큐리티 기반의 회원가입
-	 	* 요청 검증 -> 입력한 이메일의 계정이 존재하는지를 검증
-	 	* 레디스에 인증 코드를 저장하는 방식은 그대로 가져가되 이 역시 유효 코드 만료 시간인 5분으로 그대로 설정
-	    * 개선 : 이메일 인증 결과를 활용 + DTO에서 끼기 애매한 인증 코드 필드를 제거할 수 있음
-	 * @param request
-	 * @return User
-	 */
 	@Transactional
-	public User signup(UserSignUpRequest request) {
+	public User signUp(UserSignUpRequest request) {
 		validateSignupRequest(request);
 
 		User newUser = createUser(request);
@@ -57,6 +49,7 @@ public class UserService {
 
 	private void validateSignupRequest(UserSignUpRequest request) {
 		checkDuplicateEmail(request);
+		checkDuplicateNickname(request);
 		validateEmailVerification(request.getEmail());
 	}
 
@@ -66,19 +59,20 @@ public class UserService {
 		}
 	}
 
+	private void checkDuplicateNickname(UserSignUpRequest request) {
+		if (userRepository.existsByNickname(request.getNickname())) {
+			throw new UserException(DUPLICATED_NICKNAME);
+		}
+	}
+
 	private void validateEmailVerification(String email) {
 		if (!emailVerificationService.isEmailVerified(email)) {
 			throw new UserException(EMAIL_VERIFICATION_FAIL);
 		}
 	}
 
-	/**
-	 * 스프링 시큐리티 기반의 로그인
-	 * @param request
-	 * @return List<ResponseCookie>
-	 */
 	@Transactional
-	public List<ResponseCookie> signin(UserSignInRequest request) {
+	public UserSignInResult signIn(UserSignInRequest request) {
 
 		User user = findUserByEmail(request.getEmail());
 
@@ -87,10 +81,13 @@ public class UserService {
 		}
 
 		JwtToken jwtToken = tokenProvider.generateJwtToken(user);
-		redisService.saveToken(user.getEmail(), Map.of(REFRESH_TOKEN, jwtToken.refreshToken()));
-		return createTokenCookies(jwtToken);
-	}
+		redisService.saveRefreshToken(user.getEmail(), jwtToken.refreshToken());
+		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie("access_token", jwtToken.accessToken());
+		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie("refresh_token", jwtToken.refreshToken());
 
+		List<ResponseCookie> cookies = Arrays.asList(accessTokenCookie, refreshTokenCookie);
+		return UserSignInResult.of(user, cookies);
+	}
 
 	private User createUser(UserSignUpRequest request) {
 		return User.builder()
@@ -104,13 +101,6 @@ public class UserService {
 				.providerId(SELF_PROVIDER)
 				.role(request.getRole())
 				.build();
-	}
-
-	private List<ResponseCookie> createTokenCookies(JwtToken token) {
-		return List.of(
-				cookieConfig.createAccessTokenCookie(token.accessToken()),
-				cookieConfig.createRefreshTokenCookie(token.refreshToken())
-		);
 	}
 
 	private boolean isValidPassword(String rawPassword, String encodedPassword) {
