@@ -1,6 +1,6 @@
 package com.example.aniwhere.controller.user;
 
-import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
 import com.example.aniwhere.service.user.KakaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;

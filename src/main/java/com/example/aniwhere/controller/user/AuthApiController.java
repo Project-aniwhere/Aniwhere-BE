@@ -2,7 +2,7 @@ package com.example.aniwhere.controller.user;
 
 import com.example.aniwhere.domain.user.dto.UserSignInResult;
 import com.example.aniwhere.service.user.UserService;
-import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
