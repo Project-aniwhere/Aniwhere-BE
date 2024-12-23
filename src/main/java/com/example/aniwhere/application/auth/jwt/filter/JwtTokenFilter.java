@@ -1,6 +1,8 @@
-package com.example.aniwhere.application.jwt;
+package com.example.aniwhere.application.auth.jwt.filter;
 
-import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
+import com.example.aniwhere.application.auth.jwt.JwtWhitelist;
+import com.example.aniwhere.application.auth.jwt.provider.JwtAuthenticationProvider;
 import com.example.aniwhere.global.error.exception.UserException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,12 +24,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
 	private final JwtWhitelist whitelist;
 	private final CookieConfig cookieConfig;
-	private final TokenProvider tokenProvider;
+	private final JwtAuthenticationProvider provider;
 
-	public JwtTokenFilter(CookieConfig cookieConfig, TokenProvider tokenProvider, JwtWhitelist whitelist) {
+	public JwtTokenFilter(CookieConfig cookieConfig, JwtAuthenticationProvider provider, JwtWhitelist whitelist) {
 		this.whitelist = whitelist;
 		this.cookieConfig = cookieConfig;
-		this.tokenProvider = tokenProvider;
+		this.provider = provider;
 	}
 
 	@Override
@@ -49,16 +51,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			throw new UserException(UNAUTHORIZED);
 		}
 
-		if (accessToken != null && tokenProvider.validateToken(accessToken)) {
-			String email = tokenProvider.getEmail(accessToken);
-			log.info("현재 토큰 정보로 조회할 수 있는 이메일={}", email);
-
-			if (email != null) {
-				Authentication authentication = tokenProvider.getAuthentication(accessToken);
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-			}
+		try {
+			Authentication authentication = provider.authentication(accessToken);
+			log.info("생성된 Authentication 객체: principal={}, authorities={}",
+					authentication.getPrincipal(),
+					authentication.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			log.info("Security Context에 인증 정보 저장 완료");
+		} catch (Exception e) {
+			log.error("토큰 검증 실패", e);
+			throw new UserException(UNAUTHORIZED);
 		}
-
 		filterChain.doFilter(request, response);
 	}
 }
