@@ -1,13 +1,14 @@
 package com.example.aniwhere.service.user;
 
+import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
 import com.example.aniwhere.domain.user.dto.UserSignInResult;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.JwtToken;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
-import com.example.aniwhere.application.config.CookieConfig;
-import com.example.aniwhere.repository.UserRepository;
-import com.example.aniwhere.application.jwt.TokenProvider;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
+import com.example.aniwhere.repository.user.UserRepository;
+import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
@@ -80,7 +81,7 @@ public class UserService {
 			throw new UserException(PASSWORD_MISMATCH);
 		}
 
-		JwtToken jwtToken = tokenProvider.generateJwtToken(user);
+		JwtToken jwtToken = generateTokens(user);
 		redisService.saveRefreshToken(user.getEmail(), jwtToken.refreshToken());
 		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie("access_token", jwtToken.accessToken());
 		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie("refresh_token", jwtToken.refreshToken());
@@ -111,4 +112,17 @@ public class UserService {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 	}
+
+	private JwtToken generateTokens(User user) {
+		CreateTokenCommand command = new CreateTokenCommand(user.getId(), user.getRole());
+
+		String accessToken = tokenProvider.generateAccessToken(command);
+		String refreshToken = tokenProvider.generateRefreshToken(command, user);
+
+		redisService.saveRefreshToken(String.valueOf(user.getId()), refreshToken);
+		log.debug("Tokens generated for user: {}", user.getId());
+
+		return new JwtToken(accessToken, refreshToken);
+	}
+
 }

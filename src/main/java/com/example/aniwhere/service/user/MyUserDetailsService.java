@@ -1,8 +1,8 @@
 package com.example.aniwhere.service.user;
 
-import com.example.aniwhere.domain.user.MyUserDetails;
+import com.example.aniwhere.application.config.security.MyUserDetails;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.repository.UserRepository;
+import com.example.aniwhere.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
