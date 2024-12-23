@@ -1,14 +1,16 @@
 package com.example.aniwhere.service.token;
 
-import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
+import com.example.aniwhere.application.auth.jwt.dto.Claims;
+import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.RefreshToken;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.global.error.exception.TokenException;
-import com.example.aniwhere.application.jwt.TokenProvider;
-import com.example.aniwhere.repository.RefreshTokenRepository;
-import com.example.aniwhere.repository.UserRepository;
+import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
+import com.example.aniwhere.repository.token.RefreshTokenRepository;
+import com.example.aniwhere.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
@@ -31,44 +33,51 @@ public class TokenService {
 
 	@Transactional
 	public ResponseCookie createNewAccessToken(String refreshToken) {
+		try {
+			Claims claims = tokenProvider.validateToken(refreshToken);
+			String storedRefreshToken = redisService.getRefreshToken(String.valueOf(claims.userId()));
 
-		if (!tokenProvider.validateToken(refreshToken)) {
+			if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
+				User user = getUserByUserId(claims.userId());
+				String newAccessToken = generateAccessToken(user);
+				return cookieConfig.createAccessTokenCookie("access_token", newAccessToken);
+			}
+
+			return handleCacheMiss(claims.userId());
+		} catch (TokenException e) {
+			log.error("Refresh token validation failed", e);
 			throw new TokenException(INVALID_TOKEN);
 		}
-
-		String email = tokenProvider.getEmail(refreshToken);
-		String storedRefreshToken = redisService.getRefreshToken(email);
-
-		if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)) {
-			User user = getUserFromRefreshToken(refreshToken);
-			String newAccessToken = tokenProvider.generateAccessToken(user);
-			return cookieConfig.createAccessTokenCookie("access_token", newAccessToken);
-		}
-
-		return handleCacheMiss(email);
 	}
 
-	private ResponseCookie handleCacheMiss(String email) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-		RefreshToken dbRefreshToken = refreshTokenRepository.findByUserId(user.getId())
+	private ResponseCookie handleCacheMiss(Long userId) {
+		User user = getUserByUserId(userId);
+
+		RefreshToken dbRefreshToken = refreshTokenRepository.findByUserId(userId)
 				.orElseThrow(() -> new TokenException(NOT_FOUND_REFRESH_TOKEN));
 
-		boolean result = tokenProvider.validateToken(dbRefreshToken.toString());
-
-		if (!result) {
+		try {
+			tokenProvider.validateToken(dbRefreshToken.getRefreshToken());
+		} catch (TokenException e) {
 			throw new TokenException(INVALID_REFRESH_TOKEN);
 		}
 
-		redisService.saveRefreshToken(email, dbRefreshToken.getRefreshToken());
-		String newAccessToken = tokenProvider.generateAccessToken(user);
+		redisService.saveRefreshToken(String.valueOf(userId), dbRefreshToken.getRefreshToken());
+		String newAccessToken = generateAccessToken(user);
 		return cookieConfig.createAccessTokenCookie("access_token", newAccessToken);
 	}
 
-	private User getUserFromRefreshToken(String refreshToken) {
-		String email = tokenProvider.getEmail(refreshToken);
-		return userRepository.findByEmail(email)
+	private User getUserByUserId(Long userId) {
+		return userRepository.findById(userId)
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+	}
+
+	private String generateAccessToken(User user) {
+		CreateTokenCommand command = new CreateTokenCommand(
+				user.getId(),
+				user.getRole()
+		);
+		return tokenProvider.generateAccessToken(command);
 	}
 }

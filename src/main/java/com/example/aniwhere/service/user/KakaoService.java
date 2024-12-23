@@ -1,9 +1,10 @@
 package com.example.aniwhere.service.user;
 
+import com.example.aniwhere.application.auth.jwt.dto.Claims;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.OAuthToken;
 import com.example.aniwhere.global.error.exception.ExternalServiceException;
-import com.example.aniwhere.application.jwt.TokenProvider;
+import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,12 +22,14 @@ import static com.example.aniwhere.global.error.ErrorCode.*;
 @RequiredArgsConstructor
 public class KakaoService {
 
-	private static final String KAKAO_REISSUE_URL = "https://kauth.kakao.com/oauth/token";
 	private static final String KAKAO_LOGOUT_URL = "https://kapi.kakao.com/v1/user/logout";
 
 	private final TokenProvider tokenProvider;
 	private final RedisService redisService;
 	private final WebClient webClient;
+
+	@Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
+	private String url;
 
 	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
 	private String clientId;
@@ -35,12 +38,13 @@ public class KakaoService {
 	private String clientSecret;
 
 	public Mono<OAuthToken> kakaoReissue(String refreshToken) {
-		String email = tokenProvider.getEmail(refreshToken);
-		String oAuthRefreshToken = redisService.getOAuthRefreshToken(email);
+		Claims claims = tokenProvider.validateToken(refreshToken);
+		String userId = String.valueOf(claims.userId());
+		String oAuthRefreshToken = redisService.getOAuthRefreshToken(userId);
 		log.info("oAuthRefreshToken: {}", oAuthRefreshToken);
 
 		return webClient.post()
-				.uri(KAKAO_REISSUE_URL)
+				.uri(url)
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.bodyValue("grant_type=refresh_token" +
 						"&client_id=" + clientId +
@@ -50,25 +54,27 @@ public class KakaoService {
 				.bodyToMono(OAuthToken.class)
 				.doOnNext(token -> {
 					if (token.accessToken() != null && token.refreshToken() != null) {
-						redisService.saveOAuthAccessToken(email, token.accessToken());
-						redisService.saveOAuthRefreshToken(email, token.refreshToken());
+						redisService.saveOAuthAccessToken(userId, token.accessToken());
+						redisService.saveOAuthRefreshToken(userId, token.refreshToken());
 					}
 				})
 				.onErrorMap(WebClientResponseException.class,
-						e -> new ExternalServiceException(NETWORK_ERROR, KAKAO_REISSUE_URL));
+						e -> new ExternalServiceException(NETWORK_ERROR, url));
 	}
 
 	public Mono<Void> kakaoLogout(String accessToken, String refreshToken) {
-		String email = tokenProvider.getEmail(accessToken);
+		Claims claims = tokenProvider.validateToken(accessToken);
+		String userId = String.valueOf(claims.userId());
 
-		return Mono.justOrEmpty(redisService.getOAuthAccessToken(email))
-				.flatMap(oAuthToken -> processKakaoLogout(email, oAuthToken, accessToken, refreshToken))
+		return Mono.justOrEmpty(redisService.getOAuthAccessToken(userId))
+				.flatMap(oAuthToken -> processKakaoLogout(userId, oAuthToken, accessToken, refreshToken))
 				.switchIfEmpty(Mono.defer(() -> {
-					handleTokenBlacklisting(email, accessToken, refreshToken);
+					handleTokenBlacklisting(userId, accessToken, refreshToken);
 					return Mono.empty();
 				}))
 				.onErrorResume(WebClientResponseException.class, e -> {
-					handleTokenBlacklisting(email, accessToken, refreshToken);
+					handleTokenBlacklisting(userId, accessToken, refreshToken);
+					log.error("Kakao logout failed for userId {}: {}", userId, e.getMessage());
 					throw new ExternalServiceException(NETWORK_ERROR, KAKAO_LOGOUT_URL);
 				});
 	}
@@ -81,7 +87,6 @@ public class KakaoService {
 				.retrieve()
 				.toBodilessEntity()
 				.flatMap(response -> {
-					// Redis 작업들을 Mono로 변환하여 체이닝
 					return Mono.fromRunnable(() -> {
 						redisService.deleteOAuthToken(email);
 						redisService.deleteOAuthToken(email);
