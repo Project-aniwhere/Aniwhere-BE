@@ -1,12 +1,14 @@
 package com.example.aniwhere.service.user;
 
+import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
+import com.example.aniwhere.domain.user.dto.UserSignInResult;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.JwtToken;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
-import com.example.aniwhere.application.config.CookieConfig;
-import com.example.aniwhere.repository.UserRepository;
-import com.example.aniwhere.application.jwt.TokenProvider;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
+import com.example.aniwhere.repository.user.UserRepository;
+import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
@@ -15,10 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import static com.example.aniwhere.domain.token.TokenType.REFRESH_TOKEN;
 import static com.example.aniwhere.domain.user.dto.UserDTO.*;
 import static com.example.aniwhere.global.error.ErrorCode.*;
 
@@ -37,16 +38,8 @@ public class UserService {
 	private final EmailVerificationService emailVerificationService;
 	private final CookieConfig cookieConfig;
 
-	/**
-	 * 스프링 시큐리티 기반의 회원가입
-	 	* 요청 검증 -> 입력한 이메일의 계정이 존재하는지를 검증
-	 	* 레디스에 인증 코드를 저장하는 방식은 그대로 가져가되 이 역시 유효 코드 만료 시간인 5분으로 그대로 설정
-	    * 개선 : 이메일 인증 결과를 활용 + DTO에서 끼기 애매한 인증 코드 필드를 제거할 수 있음
-	 * @param request
-	 * @return User
-	 */
 	@Transactional
-	public User signup(UserSignUpRequest request) {
+	public User signUp(UserSignUpRequest request) {
 		validateSignupRequest(request);
 
 		User newUser = createUser(request);
@@ -57,6 +50,7 @@ public class UserService {
 
 	private void validateSignupRequest(UserSignUpRequest request) {
 		checkDuplicateEmail(request);
+		checkDuplicateNickname(request);
 		validateEmailVerification(request.getEmail());
 	}
 
@@ -66,19 +60,20 @@ public class UserService {
 		}
 	}
 
+	private void checkDuplicateNickname(UserSignUpRequest request) {
+		if (userRepository.existsByNickname(request.getNickname())) {
+			throw new UserException(DUPLICATED_NICKNAME);
+		}
+	}
+
 	private void validateEmailVerification(String email) {
 		if (!emailVerificationService.isEmailVerified(email)) {
 			throw new UserException(EMAIL_VERIFICATION_FAIL);
 		}
 	}
 
-	/**
-	 * 스프링 시큐리티 기반의 로그인
-	 * @param request
-	 * @return List<ResponseCookie>
-	 */
 	@Transactional
-	public List<ResponseCookie> signin(UserSignInRequest request) {
+	public UserSignInResult signIn(UserSignInRequest request) {
 
 		User user = findUserByEmail(request.getEmail());
 
@@ -86,11 +81,14 @@ public class UserService {
 			throw new UserException(PASSWORD_MISMATCH);
 		}
 
-		JwtToken jwtToken = tokenProvider.generateJwtToken(user);
-		redisService.saveToken(user.getEmail(), Map.of(REFRESH_TOKEN, jwtToken.refreshToken()));
-		return createTokenCookies(jwtToken);
-	}
+		JwtToken jwtToken = generateTokens(user);
+		redisService.saveRefreshToken(user.getEmail(), jwtToken.refreshToken());
+		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie("access_token", jwtToken.accessToken());
+		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie("refresh_token", jwtToken.refreshToken());
 
+		List<ResponseCookie> cookies = Arrays.asList(accessTokenCookie, refreshTokenCookie);
+		return UserSignInResult.of(user, cookies);
+	}
 
 	private User createUser(UserSignUpRequest request) {
 		return User.builder()
@@ -106,13 +104,6 @@ public class UserService {
 				.build();
 	}
 
-	private List<ResponseCookie> createTokenCookies(JwtToken token) {
-		return List.of(
-				cookieConfig.createAccessTokenCookie(token.accessToken()),
-				cookieConfig.createRefreshTokenCookie(token.refreshToken())
-		);
-	}
-
 	private boolean isValidPassword(String rawPassword, String encodedPassword) {
 		return passwordEncoder.matches(rawPassword, encodedPassword);
 	}
@@ -121,4 +112,17 @@ public class UserService {
 		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 	}
+
+	private JwtToken generateTokens(User user) {
+		CreateTokenCommand command = new CreateTokenCommand(user.getId(), user.getRole());
+
+		String accessToken = tokenProvider.generateAccessToken(command);
+		String refreshToken = tokenProvider.generateRefreshToken(command, user);
+
+		redisService.saveRefreshToken(String.valueOf(user.getId()), refreshToken);
+		log.debug("Tokens generated for user: {}", user.getId());
+
+		return new JwtToken(accessToken, refreshToken);
+	}
+
 }

@@ -1,12 +1,12 @@
 package com.example.aniwhere.service.user;
 
-import com.example.aniwhere.domain.user.MyUserDetails;
+import com.example.aniwhere.application.config.security.MyUserDetails;
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.Sex;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.application.oauth2.KakaoUserInfo;
-import com.example.aniwhere.application.oauth2.OAuth2UserInfo;
-import com.example.aniwhere.repository.UserRepository;
+import com.example.aniwhere.application.auth.oauth2.KakaoUserInfo;
+import com.example.aniwhere.application.auth.oauth2.OAuth2UserInfo;
+import com.example.aniwhere.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

@@ -1,18 +1,21 @@
 package com.example.aniwhere.controller.episodes;
 
+import com.example.aniwhere.application.auth.resolver.LoginUser;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewRequest;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
-import com.example.aniwhere.global.common.ApiResponse;
 import com.example.aniwhere.repository.episodes.EpisodesRepository;
 import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
+import com.example.aniwhere.service.episodes.dto.EpisodeReviewCommand;
 import com.example.aniwhere.service.episodes.EpisodeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +37,9 @@ public class EpisodeApiController {
 	@GetMapping("/animes/{animeId}/episodes")
 	public ResponseEntity<Page<EpisodesDto>> getEpisodes(@PathVariable(name = "animeId") Long animeId, Pageable pageable) {
 		Page<EpisodesDto> episodes = episodesRepository.getEpisodes(animeId, pageable);
-		return ResponseEntity.ok(episodes);
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(episodes);
 	}
 
 	@Operation(
@@ -42,9 +47,14 @@ public class EpisodeApiController {
 			description = "에피소드별 리뷰를 작성할 수 있습니다."
 	)
 	@PostMapping("/episodes/{episodeId}/reviews")
-	public ResponseEntity<ApiResponse> addReview(@PathVariable(name = "episodeId") Long episodeId, @RequestBody EpisodeReviewRequest request) {
-		episodesService.addReview(episodeId, request);
-        return ResponseEntity.status(201).body(ApiResponse.of(201, "리뷰 등록 성공"));
+	public ResponseEntity<Void> addReview(@PathVariable(name = "episodeId") Long episodeId,
+										  @Valid @RequestBody final EpisodeReviewRequest request,
+										  @LoginUser final Long userId) {
+		EpisodeReviewCommand episodeReviewCommand = EpisodeReviewCommand.of(userId, request);
+		episodesService.addReview(episodeId, episodeReviewCommand);
+		return ResponseEntity
+				.status(HttpStatus.CREATED)
+				.build();
 	}
 
 	@Operation(
@@ -54,6 +64,36 @@ public class EpisodeApiController {
 	@GetMapping("/episodes/{episodeId}/reviews")
 	public ResponseEntity<Page<EpisodeReviewResponse>> getEpisodeReviews(@PathVariable(name = "episodeId") Long episodeId, Pageable pageable) {
 		Page<EpisodeReviewResponse> episodeReviews = episodeReviewRepository.getEpisodeReviews(episodeId, pageable);
-		return ResponseEntity.ok(episodeReviews);
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(episodeReviews);
+	}
+
+	@Operation(
+			summary = "에피소드 리뷰 수정",
+			description = "작성했던 에피소드별 리뷰를 수정할 수 있습니다."
+	)
+	@PutMapping("/episodes/{episodeId}/reviews")
+	public ResponseEntity<Void> updateReview(@PathVariable(name = "episodeId") Long episodeId,
+                                            @Valid @RequestBody final EpisodeReviewRequest request,
+                                            @LoginUser final Long userId) {
+		EpisodeReviewCommand command = EpisodeReviewCommand.of(userId, request);
+		episodesService.updateReview(episodeId, command);
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.build();
+	}
+
+	@Operation(
+			summary = "에피소드 리뷰 삭제",
+			description = "작성했던 에피소드별 리뷰를 삭제할 수 있습니다."
+	)
+	@DeleteMapping("/episodes/{episodeId}/reviews")
+	public ResponseEntity<Void> deleteReview(@PathVariable Long episodeId,
+											 @LoginUser Long userId) {
+		episodesService.deleteReview(episodeId, userId);
+		return ResponseEntity
+				.status(HttpStatus.NO_CONTENT)
+				.build();
 	}
 }

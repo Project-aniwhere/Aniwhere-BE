@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.example.aniwhere.application.anime.repository.AnimeCustomRepositoryImpl.anime;
+import static com.example.aniwhere.repository.anime.repository.AnimeCustomRepositoryImpl.anime;
 import static com.example.aniwhere.domain.episodes.QEpisodes.episodes;
 
 @Repository

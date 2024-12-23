@@ -2,14 +2,23 @@ package com.example.aniwhere.domain.user;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public enum Role {
-	ROLE_ADMIN("ROLE_ADMIN"),
-	ROLE_USER("ROLE_USER");
+	ROLE_USER(Constants.ROLE_USER, List.of(Constants.ROLE_USER)),
+	ROLE_ADMIN(Constants.ROLE_ADMIN, List.of(Constants.ROLE_ADMIN));
 
-	private final String name;
+	private final String value;
+	private final List<String> authorities;
 
-	Role(String name) {
-		this.name = name;
+	Role(String value, List<String> authorities) {
+		this.value = value;
+		this.authorities = authorities;
+	}
+
+	private static class Constants {
+		private static final String ROLE_USER = "ROLE_USER";
+		private static final String ROLE_ADMIN = "ROLE_ADMIN";
 	}
 }
