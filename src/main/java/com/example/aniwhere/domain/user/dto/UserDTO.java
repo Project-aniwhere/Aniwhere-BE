@@ -55,6 +55,8 @@ public class UserDTO {
 	@AllArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class UserSignInResponse {
 
+		private Long userId;
+		private Role role;
 		private String email;
 		private String nickname;
 		private Sex sex;
@@ -63,6 +65,8 @@ public class UserDTO {
 
 		public static UserSignInResponse from(User user) {
 			return new UserSignInResponse(
+					user.getId(),
+					user.getRole(),
 					user.getEmail(),
 					user.getNickname(),
 					user.getSex(),
