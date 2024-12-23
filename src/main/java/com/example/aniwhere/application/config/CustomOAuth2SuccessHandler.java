@@ -28,6 +28,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+	private static final String FRONT_REDIRECT_URL = "http://localhost:3000";
+
 	private final RedisService redisService;
 	private final TokenProvider tokenProvider;
 	private final CookieConfig cookieConfig;
@@ -46,6 +48,8 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
 		JwtToken jwtToken = tokenProvider.generateJwtToken(user);
 		setTokenCookies(response, jwtToken);
+
+		getRedirectStrategy().sendRedirect(request, response, FRONT_REDIRECT_URL);
 	}
 
 	private static User extractUserInfoFromAuthentication(Authentication authentication) {
