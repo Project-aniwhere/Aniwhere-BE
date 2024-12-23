@@ -1,9 +1,7 @@
 package com.example.aniwhere.controller.token;
 
-//import com.example.aniwhere.service.user.KakaoService;
 import com.example.aniwhere.service.token.TokenService;
-import com.example.aniwhere.domain.token.dto.OAuthToken;
-import com.example.aniwhere.application.config.CookieConfig;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
 import com.example.aniwhere.service.user.KakaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
