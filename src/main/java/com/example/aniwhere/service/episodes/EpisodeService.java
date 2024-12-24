@@ -28,7 +28,7 @@ public class EpisodeService {
 	private final EpisodesRepository episodesRepository;
 
 	@Transactional
-	public void addReview(Long episodeId, @RequestBody EpisodeReviewCommand command) {
+	public void addReview(Long episodeId, EpisodeReviewCommand command) {
 
 		Episodes episode = episodesRepository.findById(episodeId)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
@@ -49,7 +49,7 @@ public class EpisodeService {
 	}
 
 	@Transactional
-	public void updateReview(Long episodeId, @RequestBody EpisodeReviewCommand command) {
+	public void updateReview(Long episodeId, EpisodeReviewCommand command) {
 		Episodes episode = episodesRepository.findById(episodeId)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
 
