@@ -2,6 +2,7 @@ package com.example.aniwhere.domain.user.dto;
 
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.Sex;
+import com.example.aniwhere.domain.user.User;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -46,6 +47,33 @@ public class UserDTO {
 
 		@NotNull(message = "비밀번호는 필수 입력 값입니다.")
 		private String password;
+	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@AllArgsConstructor(access = AccessLevel.PROTECTED)
+	public static class UserSignInResponse {
+
+		private Long userId;
+		private Role role;
+		private String email;
+		private String nickname;
+		private Sex sex;
+		private String birthyear;
+		private String birthday;
+
+		public static UserSignInResponse from(User user) {
+			return new UserSignInResponse(
+					user.getId(),
+					user.getRole(),
+					user.getEmail(),
+					user.getNickname(),
+					user.getSex(),
+					user.getBirthyear(),
+					user.getBirthday()
+			);
+		}
 	}
 
 	@Getter

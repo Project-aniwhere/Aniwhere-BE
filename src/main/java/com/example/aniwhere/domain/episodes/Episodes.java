@@ -1,6 +1,7 @@
 package com.example.aniwhere.domain.episodes;
 
 import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.domain.episodeReviews.EpisodeReviews;
 import com.example.aniwhere.global.common.Common;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,6 +25,9 @@ public class Episodes extends Common {
 	@ManyToOne
 	@JoinColumn(name = "anime_id")
 	private Anime anime;
+
+	@OneToMany(mappedBy = "episodes")
+	private List<EpisodeReviews> episodeReviews = new ArrayList<>();
 
 	@Column(name = "episode_number")
 	private Integer episodeNumber;
@@ -36,6 +42,9 @@ public class Episodes extends Common {
 	@Column(name = "duration")
 	private Integer duration;
 
+	@Column(name = "average_rating")
+	private double averageRating;
+
 	@Column(name = "episode_story")
 	private String episodeStory;
 
@@ -49,5 +58,25 @@ public class Episodes extends Common {
 		if (!anime.getEpisodesList().contains(this)) {
 			anime.getEpisodesList().add(this);
 		}
+	}
+
+	public void updateAverageRating() {
+		double newAverage = calculateAverageRating();
+		this.averageRating = newAverage;
+	}
+
+	private double calculateAverageRating() {
+		if (this.episodeReviews == null || this.episodeReviews.isEmpty()) {
+			return 0.0;
+		}
+
+		return this.episodeReviews.stream()
+				.mapToDouble(EpisodeReviews::getRating)
+				.average()
+				.orElse(0.0);
+	}
+	public void addEpisodeReview(EpisodeReviews episodeReview) {
+		this.episodeReviews.add(episodeReview);
+		updateAverageRating();
 	}
 }

@@ -22,7 +22,7 @@ public class EpisodeReviews extends Common {
 	private User user;
 
 	@Column(name = "rating", nullable = false)
-	private Double rating;
+	private double rating;
 
 	@Column(name = "content")
 	private String content;
@@ -33,5 +33,18 @@ public class EpisodeReviews extends Common {
 		this.user = user;
         this.rating = rating;
         this.content = content;
+
+		if (episodes != null) {
+			episodes.addEpisodeReview(this);
+		}
+	}
+
+	public void updateReview(double rating, String content) {
+		this.rating = rating;
+		this.content = content;
+
+		if (this.episodes != null) {
+			this.episodes.updateAverageRating();
+		}
 	}
 }

@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EpisodesReviewRepositoryCustom {
 	Page<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, Pageable pageable);
+	Page<EpisodeReviewResponse> getUserEpisodeReviews(String nickname, Pageable pageable);
+	Page<EpisodeReviewResponse> getMyEpisodeReviews(Long userId, Pageable pageable);
 }
