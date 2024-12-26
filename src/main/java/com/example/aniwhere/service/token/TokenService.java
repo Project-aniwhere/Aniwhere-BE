@@ -63,7 +63,6 @@ public class TokenService {
 			throw new TokenException(INVALID_REFRESH_TOKEN);
 		}
 
-		redisService.saveRefreshToken(String.valueOf(userId), dbRefreshToken.getRefreshToken());
 		String newAccessToken = generateAccessToken(user);
 		return cookieConfig.createAccessTokenCookie("access_token", newAccessToken);
 	}
