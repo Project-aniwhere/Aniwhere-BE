@@ -34,17 +34,10 @@ public class EpisodeReviews extends Common {
         this.rating = rating;
         this.content = content;
 
-		if (episodes != null) {
-			episodes.addEpisodeReview(this);
-		}
 	}
 
-	public void updateReview(double rating, String content) {
+	public void changeRatingAndContent(final double rating, final String content) {
 		this.rating = rating;
 		this.content = content;
-
-		if (this.episodes != null) {
-			this.episodes.updateAverageRating();
-		}
 	}
 }

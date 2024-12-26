@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import static com.example.aniwhere.global.error.ErrorCode.*;
 
@@ -38,6 +37,9 @@ public class EpisodeService {
 
 		checkDuplicateEpisodesReview(episode, user);
 
+		double weightedScore = command.request().rating();
+		episode.addReview(weightedScore);
+
 		EpisodeReviews episodeReviews = EpisodeReviews.builder()
 				.episodes(episode)
 				.user(user)
@@ -59,7 +61,11 @@ public class EpisodeService {
 		EpisodeReviews review = episodeReviewRepository.findByEpisodesAndUser(episode, user)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE_REVIEW));
 
-		review.updateReview(command.request().rating(), command.request().content());
+		double oldWeightedScore = review.getRating();
+		double newWeightedScore = command.request().rating();
+
+		episode.updateReview(oldWeightedScore, newWeightedScore);
+		review.changeRatingAndContent(command.request().rating(), command.request().content());
 	}
 
 	@Transactional
@@ -73,9 +79,9 @@ public class EpisodeService {
 		EpisodeReviews review = episodeReviewRepository.findByEpisodesAndUser(episode, user)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE_REVIEW));
 
+		double weightedScore = review.getRating();
+		episode.deleteReview(weightedScore);
 		episodeReviewRepository.delete(review);
-		episode.getEpisodeReviews().remove(review);
-		episode.updateAverageRating();
 	}
 
 	private void checkDuplicateEpisodesReview(Episodes episodes, User user) {
