@@ -24,7 +24,7 @@ public class CookieConfig {
 	public ResponseCookie createAccessTokenCookie(String name, String value) {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
-				.secure(true)
+				.secure(false)	// 개발환경에서는 false로 수정
 				.sameSite("none")
 				.maxAge(accessTokenExpirationTime / 1000)
 				.path("/")
@@ -34,7 +34,7 @@ public class CookieConfig {
 	public ResponseCookie createRefreshTokenCookie(String name, String value) {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
-				.secure(true)
+				.secure(false)	// 개발환경에서는 false로 설정
 				.sameSite("none")
 				.maxAge(refreshTokenExpirationTime / 1000)
 				.path("/")
