@@ -5,10 +5,8 @@ import com.example.aniwhere.application.auth.jwt.dto.Claims;
 import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
 import com.example.aniwhere.global.error.exception.TokenException;
 import com.example.aniwhere.service.redis.RedisService;
-import com.example.aniwhere.domain.token.RefreshToken;
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.User;
-import com.example.aniwhere.repository.token.RefreshTokenRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import com.auth0.jwt.JWT;
@@ -32,15 +30,13 @@ public class TokenProvider {
 
 	private final JwtProperties jwtProperties;
 	private final RedisService redisService;
-	private final RefreshTokenRepository refreshTokenRepository;
 
 	private final Algorithm algorithm;
 	private final JWTVerifier jwtVerifier;
 
-	public TokenProvider(JwtProperties jwtProperties, RedisService redisService, RefreshTokenRepository refreshTokenRepository) {
+	public TokenProvider(JwtProperties jwtProperties, RedisService redisService) {
 		this.jwtProperties = jwtProperties;
 		this.redisService = redisService;
-		this.refreshTokenRepository = refreshTokenRepository;
 		this.algorithm = Algorithm.HMAC512(jwtProperties.getSecretKey());
 		this.jwtVerifier = JWT.require(algorithm)
 				.withIssuer(jwtProperties.getIssuer())
@@ -71,13 +67,7 @@ public class TokenProvider {
 				.withClaim(ROLE, command.role().getValue())
 				.sign(algorithm);
 
-		redisService.saveRefreshToken(user.getEmail(), refreshToken);
-
-		RefreshToken refreshTokenEntity = refreshTokenRepository.findByUserId(user.getId())
-				.map(entity -> entity.update(refreshToken))
-				.orElse(new RefreshToken(user.getId(), refreshToken));
-		refreshTokenRepository.save(refreshTokenEntity);
-
+		redisService.saveRefreshToken(user.getId(), refreshToken);
 		return refreshToken;
 	}
 

@@ -4,12 +4,10 @@ import com.example.aniwhere.application.config.cookie.CookieConfig;
 import com.example.aniwhere.application.auth.jwt.dto.Claims;
 import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
 import com.example.aniwhere.service.redis.RedisService;
-import com.example.aniwhere.domain.token.RefreshToken;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.global.error.exception.TokenException;
 import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
-import com.example.aniwhere.repository.token.RefreshTokenRepository;
 import com.example.aniwhere.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +27,6 @@ public class TokenService {
 	private final CookieConfig cookieConfig;
 	private final RedisService redisService;
 	private final UserRepository userRepository;
-	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
 	public ResponseCookie createNewAccessToken(String refreshToken) {
@@ -43,28 +40,11 @@ public class TokenService {
 				return cookieConfig.createAccessTokenCookie("access_token", newAccessToken);
 			}
 
-			return handleCacheMiss(claims.userId());
+			throw new TokenException(NOT_FOUND_REFRESH_TOKEN);
 		} catch (TokenException e) {
 			log.error("Refresh token validation failed", e);
 			throw new TokenException(INVALID_TOKEN);
 		}
-	}
-
-
-	private ResponseCookie handleCacheMiss(Long userId) {
-		User user = getUserByUserId(userId);
-
-		RefreshToken dbRefreshToken = refreshTokenRepository.findByUserId(userId)
-				.orElseThrow(() -> new TokenException(NOT_FOUND_REFRESH_TOKEN));
-
-		try {
-			tokenProvider.validateToken(dbRefreshToken.getRefreshToken());
-		} catch (TokenException e) {
-			throw new TokenException(INVALID_REFRESH_TOKEN);
-		}
-
-		String newAccessToken = generateAccessToken(user);
-		return cookieConfig.createAccessTokenCookie("access_token", newAccessToken);
 	}
 
 	private User getUserByUserId(Long userId) {
