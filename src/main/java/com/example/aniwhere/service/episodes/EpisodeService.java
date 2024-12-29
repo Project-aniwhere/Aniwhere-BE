@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import static com.example.aniwhere.global.error.ErrorCode.*;
 
@@ -28,7 +27,7 @@ public class EpisodeService {
 	private final EpisodesRepository episodesRepository;
 
 	@Transactional
-	public void addReview(Long episodeId, @RequestBody EpisodeReviewCommand command) {
+	public void addReview(Long episodeId, EpisodeReviewCommand command) {
 
 		Episodes episode = episodesRepository.findById(episodeId)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
@@ -37,6 +36,9 @@ public class EpisodeService {
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_USER));
 
 		checkDuplicateEpisodesReview(episode, user);
+
+		double weightedScore = command.request().rating();
+		episode.addReview(weightedScore);
 
 		EpisodeReviews episodeReviews = EpisodeReviews.builder()
 				.episodes(episode)
@@ -49,7 +51,7 @@ public class EpisodeService {
 	}
 
 	@Transactional
-	public void updateReview(Long episodeId, @RequestBody EpisodeReviewCommand command) {
+	public void updateReview(Long episodeId, EpisodeReviewCommand command) {
 		Episodes episode = episodesRepository.findById(episodeId)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE));
 
@@ -59,7 +61,11 @@ public class EpisodeService {
 		EpisodeReviews review = episodeReviewRepository.findByEpisodesAndUser(episode, user)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE_REVIEW));
 
-		review.updateReview(command.request().rating(), command.request().content());
+		double oldWeightedScore = review.getRating();
+		double newWeightedScore = command.request().rating();
+
+		episode.updateReview(oldWeightedScore, newWeightedScore);
+		review.changeRatingAndContent(command.request().rating(), command.request().content());
 	}
 
 	@Transactional
@@ -73,9 +79,9 @@ public class EpisodeService {
 		EpisodeReviews review = episodeReviewRepository.findByEpisodesAndUser(episode, user)
 				.orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_EPISODE_REVIEW));
 
+		double weightedScore = review.getRating();
+		episode.deleteReview(weightedScore);
 		episodeReviewRepository.delete(review);
-		episode.getEpisodeReviews().remove(review);
-		episode.updateAverageRating();
 	}
 
 	private void checkDuplicateEpisodesReview(Episodes episodes, User user) {

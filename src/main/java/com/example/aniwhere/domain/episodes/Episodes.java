@@ -42,14 +42,20 @@ public class Episodes extends Common {
 	@Column(name = "duration")
 	private Integer duration;
 
-	@Column(name = "average_rating")
-	private double averageRating;
-
 	@Column(name = "episode_story")
 	private String episodeStory;
 
 	@Column(name = "still_image")
 	private String stillImage;
+
+	@Column(name = "review_score")
+	private double totalReviewScore;
+
+	@Column(name = "review_count")
+	private int reviewCount;
+
+	@Column(name = "average_rating")
+	private double averageRating;
 
 	public void registerAnime(Anime anime) {
 		this.anime = anime;
@@ -60,23 +66,24 @@ public class Episodes extends Common {
 		}
 	}
 
-	public void updateAverageRating() {
-		double newAverage = calculateAverageRating();
-		this.averageRating = newAverage;
-	}
-
-	private double calculateAverageRating() {
-		if (this.episodeReviews == null || this.episodeReviews.isEmpty()) {
-			return 0.0;
-		}
-
-		return this.episodeReviews.stream()
-				.mapToDouble(EpisodeReviews::getRating)
-				.average()
-				.orElse(0.0);
-	}
-	public void addEpisodeReview(EpisodeReviews episodeReview) {
-		this.episodeReviews.add(episodeReview);
+	public void addReview(double newRating) {
+		this.totalReviewScore += newRating;
+		this.reviewCount++;
 		updateAverageRating();
+	}
+
+	public void updateReview(double oldRating, double newRating) {
+		this.totalReviewScore = this.totalReviewScore - oldRating + newRating;
+		updateAverageRating();
+	}
+
+	public void deleteReview(double oldRating) {
+		this.totalReviewScore -= oldRating;
+		this.reviewCount--;
+		updateAverageRating();
+	}
+
+	public void updateAverageRating() {
+		this.averageRating = reviewCount > 0 ? this.totalReviewScore / reviewCount : 0.0;
 	}
 }

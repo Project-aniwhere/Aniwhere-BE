@@ -25,7 +25,7 @@ public class CookieConfig {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
 				.secure(true)
-				.sameSite("none")
+				.sameSite("None")
 				.maxAge(accessTokenExpirationTime / 1000)
 				.path("/")
 				.build();
@@ -35,7 +35,7 @@ public class CookieConfig {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
 				.secure(true)
-				.sameSite("none")
+				.sameSite("None")
 				.maxAge(refreshTokenExpirationTime / 1000)
 				.path("/")
 				.build();
