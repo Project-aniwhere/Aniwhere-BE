@@ -39,7 +39,8 @@ public class JwtWhitelist {
 		entries.add(new WhitelistEntry("/api/v3/api-docs/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/api/swagger-ui/**", HttpMethod.GET));
 
-		entries.add(new WhitelistEntry("/api/animes/**", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/anime/**", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/episodes/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/", HttpMethod.GET));
 
 		return entries;

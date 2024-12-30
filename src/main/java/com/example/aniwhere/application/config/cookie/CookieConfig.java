@@ -66,8 +66,6 @@ public class CookieConfig {
 	public ResponseCookie invalidateAccessTokenCookie(String name, String value) {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
-				.secure(true)
-				.sameSite("none")
 				.maxAge(0)
 				.path("/")
 				.build();
@@ -76,8 +74,6 @@ public class CookieConfig {
 	public ResponseCookie invalidateRefreshTokenCookie(String name, String value) {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
-				.secure(true)
-				.sameSite("none")
 				.maxAge(0)
 				.path("/")
 				.build();
