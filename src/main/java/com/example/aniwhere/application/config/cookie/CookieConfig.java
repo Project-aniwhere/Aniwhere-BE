@@ -24,8 +24,6 @@ public class CookieConfig {
 	public ResponseCookie createAccessTokenCookie(String name, String value) {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
-				.secure(true)
-				.sameSite("None")
 				.maxAge(accessTokenExpirationTime / 1000)
 				.path("/")
 				.build();
@@ -34,8 +32,6 @@ public class CookieConfig {
 	public ResponseCookie createRefreshTokenCookie(String name, String value) {
 		return ResponseCookie.from(name, value)
 				.httpOnly(true)
-				.secure(true)
-				.sameSite("None")
 				.maxAge(refreshTokenExpirationTime / 1000)
 				.path("/")
 				.build();
