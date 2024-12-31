@@ -36,22 +36,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		String requestURI = request.getRequestURI();
-		log.info("요청 URI={}", requestURI);
-
 		if (whitelist.isWhitelisted(request)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		String accessToken = cookieConfig.extractAccessToken(request);
-		log.info("쿠키에서 추출한 액세스 토큰={}", accessToken);
-
-		if (accessToken == null) {
-			throw new UserException(UNAUTHORIZED);
-		}
-
 		try {
+			String accessToken = cookieConfig.extractAccessToken(request);
+			log.info("쿠키에서 추출한 액세스 토큰={}", accessToken);
+
+			if (accessToken == null) {
+				throw new UserException(UNAUTHORIZED);
+			}
+
 			Authentication authentication = provider.authentication(accessToken);
 			log.info("생성된 Authentication 객체: principal={}, authorities={}",
 					authentication.getPrincipal(),

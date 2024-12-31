@@ -1,8 +1,10 @@
 package com.example.aniwhere.application.auth.jwt;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.AntPathMatcher;
 
+@Slf4j
 public class WhitelistEntry {
 
 	private static final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -15,7 +17,9 @@ public class WhitelistEntry {
 		this.method = method;
 	}
 
-	public boolean matches(String path, String requestMethod) {
-		return method.matches(requestMethod) && pathMatcher.match(pattern, path);
+	public boolean matches(String pattern, String method) {
+		boolean pathMatch = pathMatcher.match(this.pattern, pattern);
+		boolean methodMatch = this.method.matches(method);
+		return pathMatch && methodMatch;
 	}
 }
