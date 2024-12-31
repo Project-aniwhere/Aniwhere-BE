@@ -3,6 +3,8 @@ package com.example.aniwhere.domain.user.dto;
 import com.example.aniwhere.domain.user.Role;
 import com.example.aniwhere.domain.user.Sex;
 import com.example.aniwhere.domain.user.User;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -30,7 +32,7 @@ public class UserDTO {
 		@Size(min = 4, max = 4, message = "출생일자는 4자리여야 합니다.")
 		private String birthday;
 
-		@ValidEnum(enumClass = Sex.class)
+		@Enumerated(EnumType.STRING)
 		private Sex sex;
 
 		private final Role role = Role.ROLE_USER;
