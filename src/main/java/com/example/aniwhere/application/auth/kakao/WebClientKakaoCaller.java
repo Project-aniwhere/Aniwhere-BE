@@ -2,8 +2,9 @@ package com.example.aniwhere.application.auth.kakao;
 
 import com.example.aniwhere.application.auth.kakao.dto.KakaoLogoutResponse;
 import com.example.aniwhere.application.auth.kakao.dto.KakaoProfileResponse;
+import com.example.aniwhere.application.auth.kakao.dto.KakaoRenewalResponse;
 import com.example.aniwhere.application.auth.kakao.dto.KakaoTokenResponse;
-import com.example.aniwhere.global.error.exception.ServerException;
+import com.example.aniwhere.global.error.exception.KakaoException;
 import com.example.aniwhere.global.error.exception.TokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,13 +43,13 @@ public class WebClientKakaoCaller implements KakaoApi {
 				.onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
 						Mono.error(new TokenException(INVALID_TOKEN)))
 				.onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
-						Mono.error(new ServerException(OAUTH2_BAD_GATEWAY_ERROR)))
+						Mono.error(new KakaoException(OAUTH2_BAD_GATEWAY_ERROR)))
 				.bodyToMono(KakaoProfileResponse.class)
 				.block();
 	}
 
 	@Override
-	public KakaoTokenResponse getAccessToken(String code) {
+	public KakaoTokenResponse getToken(String code) {
 		return webClient.post()
 				.uri("https://kauth.kakao.com/oauth/token")
 				.headers(httpHeaders -> {
@@ -64,7 +65,7 @@ public class WebClientKakaoCaller implements KakaoApi {
 				.onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
 						Mono.error(new TokenException(INVALID_TOKEN)))
 				.onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
-						Mono.error(new ServerException(OAUTH2_BAD_GATEWAY_ERROR)))
+						Mono.error(new KakaoException(OAUTH2_BAD_GATEWAY_ERROR)))
 				.bodyToMono(KakaoTokenResponse.class)
 				.block();
 	}
@@ -78,8 +79,29 @@ public class WebClientKakaoCaller implements KakaoApi {
 				.onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
 						Mono.error(new TokenException(INVALID_TOKEN)))
 				.onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
-						Mono.error(new ServerException(OAUTH2_BAD_GATEWAY_ERROR)))
+						Mono.error(new KakaoException(OAUTH2_BAD_GATEWAY_ERROR)))
 				.bodyToMono(KakaoLogoutResponse.class)
+				.block();
+	}
+
+	@Override
+	public KakaoRenewalResponse renewalToken(String refreshToken) {
+		return webClient.post()
+				.uri("https://kauth.kakao.com/oauth/token")
+				.headers(httpHeaders -> {
+					httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+					httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				})
+				.body(BodyInserters.fromFormData("grant_type", "refresh_token")
+						.with("client_id", client_id)
+						.with("client_secret", client_secret)
+						.with("refresh_token", refreshToken))
+				.retrieve()
+				.onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
+						Mono.error(new TokenException(INVALID_TOKEN)))
+				.onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
+						Mono.error(new KakaoException(OAUTH2_BAD_GATEWAY_ERROR)))
+				.bodyToMono(KakaoRenewalResponse.class)
 				.block();
 	}
 }
