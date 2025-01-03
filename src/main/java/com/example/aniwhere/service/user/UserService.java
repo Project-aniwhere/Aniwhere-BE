@@ -82,7 +82,7 @@ public class UserService {
 		}
 
 		JwtToken jwtToken = generateTokens(user);
-		redisService.saveRefreshToken(user.getEmail(), jwtToken.refreshToken());
+		redisService.saveRefreshToken(user.getId(), jwtToken.refreshToken());
 		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie("access_token", jwtToken.accessToken());
 		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie("refresh_token", jwtToken.refreshToken());
 

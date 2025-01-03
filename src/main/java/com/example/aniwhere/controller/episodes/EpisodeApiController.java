@@ -34,7 +34,7 @@ public class EpisodeApiController {
 			summary = "애니메이션 ID값에 대한 전체 에피소드 조회",
 			description = "특정 애니메이션의 모든 에피소드를 페이지 단위로 조회합니다."
 	)
-	@GetMapping("/animes/{animeId}/episodes")
+	@GetMapping("/anime/{animeId}/episodes")
 	public ResponseEntity<Page<EpisodesDto>> getEpisodes(@PathVariable(name = "animeId") Long animeId, Pageable pageable) {
 		Page<EpisodesDto> episodes = episodesRepository.getEpisodes(animeId, pageable);
 		return ResponseEntity
