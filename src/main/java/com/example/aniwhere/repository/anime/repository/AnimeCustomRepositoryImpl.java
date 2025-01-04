@@ -19,9 +19,14 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
     public static final QAnime anime = new QAnime("anime");
 
     @Override
-    public Map<Integer, List<Anime>> findAllGroupedByWeekday() {
+    public Map<Integer, List<Anime>> findAllGroupedByWeekday(Integer year, Integer quarter) {
         List<Anime> allAnimes = queryFactory
                 .selectFrom(anime)
+                .where(
+                        anime.releaseDate.year().loe(year), // 출시 연도 <= 요청 연도
+                        anime.endDate.isNull().or(anime.endDate.year().goe(year)), // 종료 연도 >= 요청 연도 또는 null
+                        anime.airingQuarter.eq(quarter) // 분기 조건 일치
+                )
                 .fetch();
 
         // 요일-숫자 매핑

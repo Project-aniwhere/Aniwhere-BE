@@ -55,8 +55,8 @@ public class AnimeController {
             description = "요일별 애니메이션을 월요일(1) ~ 일요일(7) 순으로 조회합니다."
     )
     @GetMapping("/anime/weekday")
-    public ResponseEntity<Map<Integer, List<WeekdayAnimeDTO>>> getWeekdayAnimeList(){
-        Map<Integer, List<WeekdayAnimeDTO>> animeResponse = animeService.getAnimeWeekdayList();
+    public ResponseEntity<Map<Integer, List<WeekdayAnimeDTO>>> getWeekdayAnimeList(@PathVariable Integer year, @PathVariable Integer quarter){
+        Map<Integer, List<WeekdayAnimeDTO>> animeResponse = animeService.getAnimeWeekdayList(year, quarter);
         return ResponseEntity.ok(animeResponse);
     }
 

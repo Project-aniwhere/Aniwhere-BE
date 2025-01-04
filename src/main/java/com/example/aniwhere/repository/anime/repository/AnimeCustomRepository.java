@@ -9,5 +9,5 @@ import java.util.Map;
 @Repository
 public interface AnimeCustomRepository {
 
-    Map<Integer, List<Anime>> findAllGroupedByWeekday();
+    Map<Integer, List<Anime>> findAllGroupedByWeekday(Integer year, Integer quarter);
 }
