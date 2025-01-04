@@ -3,6 +3,7 @@ import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.QAnime;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,10 +25,14 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
                 .selectFrom(anime)
                 .where(
                         anime.releaseDate.year().loe(year), // 출시 연도 <= 요청 연도
-                        anime.endDate.isNull().or(anime.endDate.year().goe(year)), // 종료 연도 >= 요청 연도 또는 null
-                        anime.airingQuarter.eq(quarter) // 분기 조건 일치
+                        anime.endDate.isNull().or(anime.endDate.year().goe(year)) // 종료 연도 >= 요청 연도 또는 null
                 )
                 .fetch();
+
+        // 요청 year와 quarter에 해당하는 애니메이션 필터링
+        List<Anime> filteredAnimes = allAnimes.stream()
+                .filter(anime -> isQuarterInRange(anime.getReleaseDate(), anime.getEndDate(), year, quarter))
+                .collect(Collectors.toList());
 
         // 요일-숫자 매핑
         Map<String, Integer> weekdayToCode = Map.of(
@@ -43,7 +48,7 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
         // 요일순서
         List<String> weekdayOrder = Arrays.asList("월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일");
 
-        Map<String, List<Anime>> groupedByWeekday = allAnimes.stream()
+        Map<String, List<Anime>> groupedByWeekday = filteredAnimes.stream()
                 .collect(Collectors.groupingBy(
                         Anime::getWeekday,
                         LinkedHashMap::new, // LinkedHashMap: 순서 유지
@@ -58,5 +63,24 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new
                 ));
+    }
+
+    /**
+     * 방영 기간 내에 특정 연도 및 분기가 포함되는지 확인
+     */
+    private boolean isQuarterInRange(LocalDate releaseDate, LocalDate endDate, Integer year, Integer quarter) {
+        if (endDate == null) {
+            endDate = LocalDate.now(); // 종료일이 없으면 현재 날짜로 간주
+        }
+
+        // 분기별 시작 월과 종료 월 계산
+        int quarterStartMonth = (quarter - 1) * 3 + 1;
+        int quarterEndMonth = quarterStartMonth + 2;
+
+        LocalDate quarterStart = LocalDate.of(year, quarterStartMonth, 1);
+        LocalDate quarterEnd = LocalDate.of(year, quarterEndMonth, quarterEndMonth == 2 ? 28 : 30); // 월별 마지막 날짜 계산
+
+        // 요청된 분기와 방영 기간이 겹치는지 확인
+        return !releaseDate.isAfter(quarterEnd) && !endDate.isBefore(quarterStart);
     }
 }

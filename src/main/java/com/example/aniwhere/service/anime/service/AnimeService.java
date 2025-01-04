@@ -133,9 +133,8 @@ public class AnimeService {
                                         .title(anime.getTitle())
                                         .poster(anime.getPoster())
                                         .weekday(anime.getWeekday())
-                                        .airingQuarter(anime.getAiringQuarter())
-                                        .releaseDate(anime.getReleaseDate().getYear())
-                                        .endDate(anime.getEndDate().getYear())
+//                                        .releaseDate(anime.getReleaseDate())
+//                                        .endDate(anime.getEndDate() != null ? anime.getEndDate() : null)
                                         .build())
                                 .collect(Collectors.toList()),
                         (oldValue, newValue) -> oldValue,

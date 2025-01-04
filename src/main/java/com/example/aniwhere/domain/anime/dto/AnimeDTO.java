@@ -94,8 +94,7 @@ public class AnimeDTO {
         private String title;
         private String poster;
         private String weekday;
-        private Integer airingQuarter;
-        private Integer releaseDate;
-        private Integer endDate;
+//        private LocalDate releaseDate;
+//        private LocalDate endDate;
     }
 }
