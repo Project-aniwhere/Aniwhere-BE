@@ -1,4 +1,4 @@
-package com.example.aniwhere.application.config;
+package com.example.aniwhere.application.config.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

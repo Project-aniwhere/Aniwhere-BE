@@ -1,105 +1,124 @@
 package com.example.aniwhere.service.user;
 
-import com.example.aniwhere.application.auth.jwt.dto.Claims;
+import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
+import com.example.aniwhere.application.auth.jwt.dto.JwtAuthentication;
+import com.example.aniwhere.application.auth.kakao.KakaoApi;
+import com.example.aniwhere.application.auth.kakao.dto.KakaoLogoutResponse;
+import com.example.aniwhere.application.auth.kakao.dto.KakaoProfileResponse;
+import com.example.aniwhere.application.config.cookie.CookieConfig;
+import com.example.aniwhere.domain.token.dto.JwtToken;
+import com.example.aniwhere.domain.user.Role;
+import com.example.aniwhere.domain.user.Sex;
+import com.example.aniwhere.domain.user.User;
+import com.example.aniwhere.domain.user.dto.UserSignInResult;
+import com.example.aniwhere.global.error.exception.UserException;
+import com.example.aniwhere.repository.user.UserRepository;
 import com.example.aniwhere.service.redis.RedisService;
-import com.example.aniwhere.domain.token.dto.OAuthToken;
-import com.example.aniwhere.global.error.exception.ExternalServiceException;
 import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+
+import java.util.List;
 
 import static com.example.aniwhere.global.error.ErrorCode.*;
+
+
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
 
-	private static final String KAKAO_LOGOUT_URL = "https://kapi.kakao.com/v1/user/logout";
-
+	private final UserRepository userRepository;
 	private final TokenProvider tokenProvider;
 	private final RedisService redisService;
-	private final WebClient webClient;
+	private final CookieConfig cookieConfig;
+	private final KakaoApi kakaoApi;
 
-	@Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
-	private String url;
+	public UserSignInResult loginKakaoUser(KakaoProfileResponse profile, String kakaoAccessToken) {
 
-	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-	private String clientId;
+		String email = profile.getKakao_account().getEmail();
+		User user;
 
-	@Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-	private String clientSecret;
+		if (userRepository.existsByEmail(email)) {
+			User existingUser = userRepository.findByEmail(email)
+					.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+	    	user = existingUser.updateUser(User.builder()
+					.providerId("KAKAO_" + email)
+					.provider("KAKAO")
+					.build());
+			log.info("기존 사용자 카카오 정보 업데이트: {}", email);
+		} else {
+			user = createKakaoUser(profile);
+			log.info("신규 카카오 사용자 등록: {}", email);
+		}
 
-	public Mono<OAuthToken> kakaoReissue(String refreshToken) {
-		Claims claims = tokenProvider.validateToken(refreshToken);
-		String userId = String.valueOf(claims.userId());
-		String oAuthRefreshToken = redisService.getOAuthRefreshToken(userId);
-		log.info("oAuthRefreshToken: {}", oAuthRefreshToken);
+		JwtToken jwtToken = generateToken(user);
 
-		return webClient.post()
-				.uri(url)
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.bodyValue("grant_type=refresh_token" +
-						"&client_id=" + clientId +
-						"&refresh_token=" + oAuthRefreshToken +
-						"&client_secret=" + clientSecret)
-				.retrieve()
-				.bodyToMono(OAuthToken.class)
-				.doOnNext(token -> {
-					if (token.accessToken() != null && token.refreshToken() != null) {
-						redisService.saveOAuthAccessToken(userId, token.accessToken());
-						redisService.saveOAuthRefreshToken(userId, token.refreshToken());
-					}
-				})
-				.onErrorMap(WebClientResponseException.class,
-						e -> new ExternalServiceException(NETWORK_ERROR, url));
+		ResponseCookie accessTokenCookie = cookieConfig.createAccessTokenCookie("access_token", jwtToken.accessToken());
+		ResponseCookie refreshTokenCookie = cookieConfig.createRefreshTokenCookie("refresh_token", jwtToken.refreshToken());
+		return UserSignInResult.of(user, List.of(accessTokenCookie, refreshTokenCookie));
 	}
 
-	public Mono<Void> kakaoLogout(String accessToken, String refreshToken) {
-		Claims claims = tokenProvider.validateToken(accessToken);
-		String userId = String.valueOf(claims.userId());
+	public void logoutKakaoUser(HttpServletResponse response) {
 
-		return Mono.justOrEmpty(redisService.getOAuthAccessToken(userId))
-				.flatMap(oAuthToken -> processKakaoLogout(userId, oAuthToken, accessToken, refreshToken))
-				.switchIfEmpty(Mono.defer(() -> {
-					handleTokenBlacklisting(userId, accessToken, refreshToken);
-					return Mono.empty();
-				}))
-				.onErrorResume(WebClientResponseException.class, e -> {
-					handleTokenBlacklisting(userId, accessToken, refreshToken);
-					log.error("Kakao logout failed for userId {}: {}", userId, e.getMessage());
-					throw new ExternalServiceException(NETWORK_ERROR, KAKAO_LOGOUT_URL);
-				});
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		JwtAuthentication jwtAuthentication = (JwtAuthentication) authentication.getPrincipal();
+		Long userId = jwtAuthentication.userId();
+
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+		String email = user.getEmail();
+		String oAuthAccessToken = redisService.getOAuthAccessToken(email);
+
+		if (oAuthAccessToken != null) {
+			KakaoLogoutResponse id = kakaoApi.logout(oAuthAccessToken);
+			log.info("카카오 로그아웃 성공 ID: {}", id);
+
+			System.out.println(email);
+			redisService.deleteOAuthToken(email);
+		}
+
+		cookieConfig.invalidateAuthCookies(response);
 	}
 
-	private Mono<Void> processKakaoLogout(String email, String oAuthToken, String accessToken, String refreshToken) {
-		return webClient.post()
-				.uri(KAKAO_LOGOUT_URL)
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
-				.retrieve()
-				.toBodilessEntity()
-				.flatMap(response -> {
-					return Mono.fromRunnable(() -> {
-						redisService.deleteOAuthToken(email);
-						redisService.deleteOAuthToken(email);
-						handleTokenBlacklisting(email, accessToken, refreshToken);
-					});
-				})
-				.onErrorMap(WebClientResponseException.class,
-						e -> new ExternalServiceException(NETWORK_ERROR, KAKAO_LOGOUT_URL, e.getMessage())).then();
+	private User createKakaoUser(KakaoProfileResponse profile) {
+		String email = profile.getKakao_account().getEmail();
+		String gender = profile.getKakao_account().getGender();
+
+		if (userRepository.existsByEmail(profile.getKakao_account().getEmail())) {
+			throw new UserException(DUPLICATED_EMAIL);
+		}
+
+		User user = User.builder()
+				.nickname(profile.getKakao_account().getProfile().getNickname())
+				.email(email)
+				.provider("KAKAO")
+				.providerId("KAKAO_" + email)
+				.role(Role.ROLE_USER)
+				.sex(Sex.valueOf(gender))
+				.birthyear(profile.getKakao_account().getBirthyear())
+				.birthday(profile.getKakao_account().getBirthday())
+				.build();
+
+		log.info("카카오 회원가입: {}", user.getEmail());
+		return userRepository.save(user);
 	}
 
-	private void handleTokenBlacklisting(String email, String accessToken, String refreshToken) {
-		redisService.saveBlackListAccessToken(email, accessToken);
-		redisService.saveBlackListRefreshToken(email, refreshToken);
+	private JwtToken generateToken(User user) {
+		CreateTokenCommand command = new CreateTokenCommand(user.getId(), user.getRole());
+
+		String accessToken = tokenProvider.generateAccessToken(command);
+		String refreshToken = tokenProvider.generateRefreshToken(command, user);
+
+		redisService.saveRefreshToken(user.getId(), refreshToken);
+
+		return new JwtToken(accessToken, refreshToken);
 	}
 }
-

@@ -1,12 +1,17 @@
 package com.example.aniwhere.controller.token;
 
+import com.example.aniwhere.application.auth.kakao.KakaoApi;
+import com.example.aniwhere.application.auth.kakao.dto.KakaoRenewalResponse;
+import com.example.aniwhere.application.auth.resolver.LoginUser;
+import com.example.aniwhere.domain.user.User;
+import com.example.aniwhere.global.error.exception.UserException;
+import com.example.aniwhere.repository.user.UserRepository;
+import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.service.token.TokenService;
 import com.example.aniwhere.application.config.cookie.CookieConfig;
-import com.example.aniwhere.service.user.KakaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+
+import static com.example.aniwhere.global.error.ErrorCode.*;
 
 @Slf4j
 @RestController
@@ -25,7 +31,9 @@ public class TokenApiController {
 
 	private final TokenService tokenService;
 	private final CookieConfig cookieConfig;
-	private final KakaoService kakaoService;
+	private final KakaoApi kakaoApi;
+	private final UserRepository userRepository;
+	private final RedisService redisService;
 
 	@Operation(
 			summary = "액세스 토큰 재발급 (스프링 시큐리티)",
@@ -43,17 +51,19 @@ public class TokenApiController {
 	}
 
 	@Operation(
-			summary = "액세스 토큰 / 리프레시 토큰 재발급 (카카오)",
-			description = "액세스 토큰과 리프레시 토큰을 재발급받기 위한 API - 카카오 소셜 로그인 서비스"
+			summary = "카카오 액세스 토큰 재발급",
+			description = "만료된 카카오 토큰을 재발급받기 위한 API - 카카오"
 	)
-	@GetMapping("/kakaoreissue")
-	public Mono<ResponseEntity<Void>> createNewAccessTokenByKakao(HttpServletRequest request, HttpServletResponse response) {
+	@PostMapping("/kakao/reissue")
+	public ResponseEntity<KakaoRenewalResponse> kakaoReissue(@LoginUser final Long id) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-		String refreshToken = cookieConfig.extractRefreshToken(request);
-		return kakaoService.kakaoReissue(refreshToken)
-				.map(token -> ResponseEntity.status(HttpStatus.CREATED)
-						.header(HttpHeaders.SET_COOKIE, token.accessToken())
-						.header(HttpHeaders.SET_COOKIE, token.refreshToken())
-						.build());
+		String refreshToken = redisService.getOAuthRefreshToken(user.getEmail());
+		KakaoRenewalResponse kakaoRenewalResponse = kakaoApi.renewalToken(refreshToken);
+
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(kakaoRenewalResponse);
 	}
 }
