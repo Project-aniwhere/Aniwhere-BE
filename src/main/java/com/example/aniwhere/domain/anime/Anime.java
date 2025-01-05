@@ -35,17 +35,18 @@ public class Anime {
     private String studio;
     private LocalDate releaseDate;
     private LocalDate endDate;
-    private Integer episodes = 0;
+    @Column(name = "episodes")
+    private Integer episodesNum;
     private String runningTime;
     private String status;
     private String trailer;
     private String description;
     private String poster;
-    private Integer airingQuarter = 0;
-    private Boolean isAdult = false;
+    private Integer airingQuarter;
+    private Boolean isAdult;
     private String duration;
     private String weekday;
-    private String anilistId;
+    private String backgroundImage;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -88,4 +89,8 @@ public class Anime {
             episodes.registerAnime(this);
         }
     }
+
+    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Episodes> episodes;
 }
