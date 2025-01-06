@@ -2,7 +2,9 @@ package com.example.aniwhere.controller.user;
 
 import com.example.aniwhere.application.auth.resolver.LoginUser;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
+import com.example.aniwhere.domain.user.dto.UserDTO;
 import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
+import com.example.aniwhere.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserApiController {
 
 	private final EpisodesReviewRepository episodesReviewRepository;
+	private final UserService userService;
 
 	@Operation(
 			summary = "내가 작성한 에피소드 리뷰 목록",
@@ -46,4 +49,27 @@ public class UserApiController {
 				.status(HttpStatus.OK)
 				.body(reviews);
 	}
+
+	@Operation(
+			summary = "본인의 정보 조회",
+			description = "로그인한 사용자가 자신의 정보를 조회합니다."
+	)
+	@GetMapping("/users/me/myInfo")
+	public ResponseEntity<UserDTO.UserInfoResponse> getMyInfo(@LoginUser Long userId) {
+		UserDTO.UserInfoResponse userResponse = userService.getMyInfo(userId);
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(userResponse);
+	}
+
+	@Operation(
+			summary = "닉네임 중복체크",
+			description = "사용자의 닉네임 중복체크를 시행합니다."
+	)
+	@GetMapping("/check/{nickName}")
+	public ResponseEntity<Boolean> nickNameDupCheck(@PathVariable(name = "nickName") String nickName){
+		boolean isAvailable = userService.isNicknameAvailable(nickName);
+		return ResponseEntity.status(HttpStatus.OK).body(isAvailable);
+	}
+
 }
