@@ -3,6 +3,9 @@ package com.example.aniwhere.controller.user;
 import com.example.aniwhere.application.auth.resolver.LoginUser;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
 import com.example.aniwhere.domain.user.dto.UserDTO;
+import com.example.aniwhere.global.error.ErrorCode;
+import com.example.aniwhere.global.error.ErrorResponse;
+import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
 import com.example.aniwhere.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -70,6 +70,16 @@ public class UserApiController {
 	public ResponseEntity<Boolean> nickNameDupCheck(@PathVariable(name = "nickName") String nickName){
 		boolean isAvailable = userService.isNicknameAvailable(nickName);
 		return ResponseEntity.status(HttpStatus.OK).body(isAvailable);
+	}
+
+	@Operation(
+			summary = "사용자 정보 업데이트",
+			description = "사용자가 자신의 정보를 업데이트합니다."
+	)
+	@PostMapping("/users/me/update")
+	public ResponseEntity<Void> updateUserInfo(@LoginUser Long userId, @RequestBody UserDTO.UserUpdateRequest updateRequest) {
+		userService.updateUserInfo(userId, updateRequest);
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 
 }

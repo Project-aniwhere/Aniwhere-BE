@@ -57,4 +57,17 @@ public class User extends Common {
 		this.provider = user.getProvider();
 		return this;
 	}
+
+	public User updateUserInfo(User updatedUser) {
+		if (!this.nickname.equals(updatedUser.getNickname())) {
+			this.nickname = updatedUser.getNickname();
+		}
+		if (!this.email.equals(updatedUser.getEmail())) {
+			this.email = updatedUser.getEmail();
+		}
+		if (!this.password.equals(updatedUser.getPassword())) {
+			this.password = updatedUser.getPassword();
+		}
+		return this;
+	}
 }

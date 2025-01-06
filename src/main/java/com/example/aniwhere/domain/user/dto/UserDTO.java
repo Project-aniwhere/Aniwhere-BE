@@ -91,7 +91,7 @@ public class UserDTO {
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@AllArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class UserInfoResponse {
-		private Long id;
+		private Long userId;
 		private String nickname;
 		private String email;
 
@@ -103,5 +103,19 @@ public class UserDTO {
 			);
 		}
 	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@AllArgsConstructor(access = AccessLevel.PROTECTED)
+	@Builder
+	public static class UserUpdateRequest {
+		private Long userId;
+		private String nickname;
+		private String email;
+		private String password;
+	}
+
+
 
 }
