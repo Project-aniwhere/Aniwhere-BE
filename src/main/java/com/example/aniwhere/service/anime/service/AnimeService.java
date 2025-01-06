@@ -9,11 +9,15 @@ import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
 
+import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -109,22 +113,16 @@ public class AnimeService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Integer, List<WeekdayAnimeDTO>> getAnimeWeekdayList() {
-        Map<Integer, List<Anime>> groupedByWeekday = animeRepository.findAllGroupedByWeekday();
-        return groupedByWeekday.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .map(anime -> WeekdayAnimeDTO.builder()
-                                        .animeId(anime.getAnimeId())
-                                        .title(anime.getTitle())
-                                        .poster(anime.getPoster())
-                                        .weekday(anime.getWeekday())
-                                        .build())
-                                .collect(Collectors.toList()),
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
+    public List<AnimeGroupedByWeekdayDTO> getAnimeWeekdayList(Integer year, Integer quarter) {
+        // 기본값 설정: 현재 연도와 분기
+        if (year == null) {
+            year = Year.now().getValue();
+        }
+        if (quarter == null) {
+            quarter = (LocalDate.now().getMonthValue() - 1) / 3 + 1; // 현재 월 기준 분기 계산
+        }
+
+        return animeRepository.findAllGroupedByWeekday(year, quarter);
     }
 }
 

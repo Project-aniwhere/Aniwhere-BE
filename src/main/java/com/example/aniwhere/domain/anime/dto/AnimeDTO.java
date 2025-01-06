@@ -86,13 +86,21 @@ public class AnimeDTO {
         }
     }
 
+    @Builder
     @Getter
     @Setter
-    @Builder
-    public static class WeekdayAnimeDTO {//요일별 애니메이션 반환
+    public static class WeekdayAnimeDTO { // 요일별 애니메이션 DTO
         private Long animeId;
         private String title;
         private String poster;
         private String weekday;
+    }
+
+    @Builder
+    @Getter
+    @Setter
+    public static class AnimeGroupedByWeekdayDTO {
+        private Integer weekdayCode;
+        private List<WeekdayAnimeDTO> animes;
     }
 }
