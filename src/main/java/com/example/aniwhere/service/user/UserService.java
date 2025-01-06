@@ -138,4 +138,41 @@ public class UserService {
 	public boolean isNicknameAvailable(String nickName) {
 		return !userRepository.existsByNickname(nickName);
 	}
+
+	@Transactional
+	public UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest updateRequest) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+		User updatedUser = User.builder()
+				.nickname(updateRequest.getNickname() != null && !updateRequest.getNickname().equals(user.getNickname())
+						? validateAndUpdateNickname(updateRequest.getNickname())
+						: user.getNickname())
+				.email(updateRequest.getEmail() != null && !updateRequest.getEmail().equals(user.getEmail())
+						? validateAndUpdateEmail(updateRequest.getEmail())
+						: user.getEmail())
+				.password(updateRequest.getPassword() != null
+						? passwordEncoder.encode(updateRequest.getPassword())
+						: user.getPassword())
+				.build();
+
+		user.updateUserInfo(updatedUser);
+
+		userRepository.save(user);
+		return UserDTO.UserInfoResponse.from(user);
+	}
+
+	private String validateAndUpdateNickname(String nickname) {
+		if (userRepository.existsByNickname(nickname)) {
+			throw new UserException(DUPLICATED_NICKNAME);
+		}
+		return nickname;
+	}
+
+	private String validateAndUpdateEmail(String email) {
+		if (userRepository.findByEmail(email).isPresent()) {
+			throw new UserException(DUPLICATED_EMAIL);
+		}
+		return email;
+	}
 }
