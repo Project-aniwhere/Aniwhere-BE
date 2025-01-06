@@ -85,4 +85,23 @@ public class UserDTO {
 		private String message;
 		private boolean isVerified;
 	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@AllArgsConstructor(access = AccessLevel.PROTECTED)
+	public static class UserInfoResponse {
+		private Long id;
+		private String nickname;
+		private String email;
+
+		public static UserInfoResponse from(User user) {
+			return new UserInfoResponse(
+					user.getId(),
+					user.getNickname(),
+					user.getEmail()
+			);
+		}
+	}
+
 }
