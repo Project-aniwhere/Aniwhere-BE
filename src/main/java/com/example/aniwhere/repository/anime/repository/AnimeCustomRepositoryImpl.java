@@ -1,6 +1,7 @@
 package com.example.aniwhere.repository.anime.repository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.QAnime;
+import com.example.aniwhere.domain.anime.dto.AnimeDTO;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
     public static final QAnime anime = new QAnime("anime");
 
     @Override
-    public Map<Integer, List<Anime>> findAllGroupedByWeekday(Integer year, Integer quarter) {
+    public List<AnimeDTO.AnimeGroupedByWeekdayDTO> findAllGroupedByWeekday(Integer year, Integer quarter) {
         List<Anime> allAnimes = queryFactory
                 .selectFrom(anime)
                 .where(
@@ -57,12 +58,18 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
 
         return weekdayOrder.stream()
                 .filter(groupedByWeekday::containsKey) // 없는 요일 제외
-                .collect(Collectors.toMap(
-                        weekdayToCode::get,
-                        groupedByWeekday::get,
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
+                .map(weekday -> AnimeDTO.AnimeGroupedByWeekdayDTO.builder()
+                        .weekdayCode(weekdayToCode.get(weekday))
+                        .animes(groupedByWeekday.get(weekday).stream()
+                                .map(anime -> AnimeDTO.WeekdayAnimeDTO.builder()
+                                        .animeId(anime.getAnimeId())
+                                        .title(anime.getTitle())
+                                        .poster(anime.getPoster())
+                                        .weekday(anime.getWeekday())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     /**

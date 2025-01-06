@@ -113,7 +113,7 @@ public class AnimeService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Integer, List<WeekdayAnimeDTO>> getAnimeWeekdayList(Integer year, Integer quarter) {
+    public List<AnimeGroupedByWeekdayDTO> getAnimeWeekdayList(Integer year, Integer quarter) {
         // 기본값 설정: 현재 연도와 분기
         if (year == null) {
             year = Year.now().getValue();
@@ -121,25 +121,8 @@ public class AnimeService {
         if (quarter == null) {
             quarter = (LocalDate.now().getMonthValue() - 1) / 3 + 1; // 현재 월 기준 분기 계산
         }
-        // 데이터 조회
-        Map<Integer, List<Anime>> groupedByWeekday = animeRepository.findAllGroupedByWeekday(year, quarter);
 
-        return groupedByWeekday.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().stream()
-                                .map(anime -> WeekdayAnimeDTO.builder()
-                                        .animeId(anime.getAnimeId())
-                                        .title(anime.getTitle())
-                                        .poster(anime.getPoster())
-                                        .weekday(anime.getWeekday())
-//                                        .releaseDate(anime.getReleaseDate())
-//                                        .endDate(anime.getEndDate() != null ? anime.getEndDate() : null)
-                                        .build())
-                                .collect(Collectors.toList()),
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
+        return animeRepository.findAllGroupedByWeekday(year, quarter);
     }
 }
 
