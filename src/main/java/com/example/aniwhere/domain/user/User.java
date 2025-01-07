@@ -1,8 +1,12 @@
 package com.example.aniwhere.domain.user;
 
+import com.example.aniwhere.domain.pickedAnime.PickedAnime;
 import com.example.aniwhere.global.common.Common;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -42,7 +46,13 @@ public class User extends Common {
 	@Column(name = "providerId")
 	private String providerId;
 
+	@OneToMany(mappedBy = "user")
+	private List<PickedAnime> pickedAnimes = new ArrayList<>();
+
+	// 정보 업데이트
 	public User updateUser(User user) {
+		this.nickname = user.getNickname();
+		this.email = user.getEmail();
 		this.providerId = user.getProviderId();
 		this.provider = user.getProvider();
 		return this;
