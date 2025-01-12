@@ -46,15 +46,15 @@ public class RedisService {
 	}
 
 	public void saveOAuthAccessToken(String email, String token) {
-		operations.set(OAUTH_ACCESS_PREFIX + email, token, Duration.ofSeconds(jwtProperties.getAccess_token_expiration_time()));
+		operations.set(OAUTH_ACCESS_PREFIX + email, token, Duration.ofSeconds(21600)); // 6시간
 	}
 
 	public void saveOAuthRefreshToken(String email, String token) {
-		operations.set(OAUTH_REFRESH_PREFIX + email, token, Duration.ofSeconds(jwtProperties.getRefresh_token_expiration_time()));
+		operations.set(OAUTH_REFRESH_PREFIX + email, token, Duration.ofSeconds(5184000)); // 60일
 	}
 
 	public void deleteOAuthToken(String email) {
-		redisTemplate.delete(email);
+		redisTemplate.delete(OAUTH_ACCESS_PREFIX + email);
 	}
 
 	public void saveCode(String key, String value, Duration duration) {

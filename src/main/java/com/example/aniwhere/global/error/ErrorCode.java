@@ -41,7 +41,9 @@ public enum ErrorCode {
 	// episodes
 	NOT_FOUND_EPISODE(404, "EP001", "해당 에피소드를 찾을 수 없습니다."),
 	ALREADY_EXIST_EPISODE_REVIEW(400, "EP002", "리뷰는 한 번만 작성할 수 있습니다."),
-	NOT_FOUND_EPISODE_REVIEW(404, "EP003", "작성한 에피소드 리뷰가 없습니다.");
+	NOT_FOUND_EPISODE_REVIEW(404, "EP003", "작성한 에피소드 리뷰가 없습니다."),
+
+	OAUTH2_BAD_GATEWAY_ERROR(502, "O001", "OAuth2 소셜 로그인 연동 중 에러가 발생하였습니다.");
 
 	private final int status;
 	private final String code;

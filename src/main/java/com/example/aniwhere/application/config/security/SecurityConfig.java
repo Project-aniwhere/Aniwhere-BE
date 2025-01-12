@@ -2,9 +2,6 @@ package com.example.aniwhere.application.config.security;
 
 import com.example.aniwhere.application.auth.handler.CustomAccessDeniedHandler;
 import com.example.aniwhere.application.auth.handler.CustomAuthenticationEntryPoint;
-import com.example.aniwhere.application.auth.oauth2.handler.CustomOAuth2FailureHandler;
-import com.example.aniwhere.application.auth.oauth2.handler.CustomOAuth2SuccessHandler;
-import com.example.aniwhere.service.user.PrincipalOAuthDetailsService;
 import com.example.aniwhere.application.auth.jwt.filter.JwtTokenFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -19,12 +16,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -36,9 +27,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
-    private final PrincipalOAuthDetailsService principalOAuthDetailsService;
-    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
-    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
@@ -54,9 +42,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/"),
                                 new AntPathRequestMatcher("/favicon.ico"),
-                                new AntPathRequestMatcher("/oauth2/authorization/kakao"),
-                                new AntPathRequestMatcher("/api/v1/oauth2/**"),
-                                new AntPathRequestMatcher("/login/**"),
+								new AntPathRequestMatcher("/api/auth/kakao/callback"),
+								new AntPathRequestMatcher("/api/auth/kakao/login"),
+								new AntPathRequestMatcher("/login/**"),
                                 new AntPathRequestMatcher("/api/login"),
                                 new AntPathRequestMatcher("/api/token"),
                                 new AntPathRequestMatcher("/api/auth/**"),
@@ -71,32 +59,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(principalOAuthDetailsService))
-                        .successHandler(customOAuth2SuccessHandler)
-                        .failureHandler(customOAuth2FailureHandler))
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-	@Bean
-	public OAuth2AuthorizedClientManager authorizedClientManager(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientRepository authorizedClientRepository) {
-
-		OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
-																.authorizationCode()
-																.refreshToken()
-																.clientCredentials()
-																.password()
-																.build();
-
-		DefaultOAuth2AuthorizedClientManager authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientRepository);
-		authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-		return authorizedClientManager;
-	}
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
