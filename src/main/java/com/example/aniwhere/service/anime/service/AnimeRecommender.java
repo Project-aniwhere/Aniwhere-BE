@@ -1,0 +1,75 @@
+package com.example.aniwhere.service.anime.service;
+
+import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.repository.anime.repository.AnimeRepository;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import smile.neighbor.KDTree;
+import smile.neighbor.Neighbor;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@RequiredArgsConstructor
+@Service
+@Transactional
+public class AnimeRecommender {
+
+    private final AnimeFeatureExtractorService extractorService;
+    private final AnimeRepository animeRepository;
+
+    /**
+     * 추후 메모리 문제로 수정.
+     */
+    private double[][] featureVectors;
+    private Anime[] allAnimesArray;
+
+    @PostConstruct
+    @Scheduled(cron = "0 0 0 1 * *")
+    public void initialize() {
+        List<Anime> allAnimes = fetchAllAnimesWithCategories();
+
+        this.featureVectors = allAnimes.stream()
+                .map(extractorService::extractFeatures)
+                .toArray(double[][]::new);
+
+        this.allAnimesArray = allAnimes.toArray(new Anime[0]);
+    }
+
+    @Transactional(readOnly = true)
+    protected List<Anime> fetchAllAnimesWithCategories() {
+        return animeRepository.findAllWithCategories();
+    }
+
+    public List<Anime> recommend(List<Anime> userLikedAnimes, int k) {
+        if (featureVectors == null || allAnimesArray == null) {
+            throw new IllegalStateException("Recommender is not initialized.");
+        }
+
+        KDTree<Anime> kdTree = new KDTree<>(featureVectors, allAnimesArray); //kdTree 생성
+
+        Set<Anime> recommendations = new HashSet<>();
+        for (Anime likedAnime : userLikedAnimes) {
+            double[] likedFeatures = extractorService.extractFeatures(likedAnime);
+
+            Neighbor<double[], Anime>[] neighbors = kdTree.search(likedFeatures, k);
+
+            for (Neighbor<double[], Anime> neighbor : neighbors) {
+                Anime recommendedAnime = neighbor.value;
+
+
+                if (!userLikedAnimes.contains(recommendedAnime)) {// 중복 및 이미 좋아요한 애니 제외
+                    recommendations.add(recommendedAnime);
+                }
+            }
+        }
+
+        List<Anime> resultList = new ArrayList<>(recommendations);
+        return resultList.subList(0, Math.min(resultList.size(), 10)); //최대 10개
+    }
+}

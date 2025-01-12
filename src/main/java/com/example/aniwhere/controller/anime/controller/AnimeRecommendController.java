@@ -1,7 +1,11 @@
 package com.example.aniwhere.controller.anime.controller;
 
+import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
+import com.example.aniwhere.domain.recommendList.RecommendListDTO;
 import com.example.aniwhere.service.anime.service.RecommendService;
 import com.example.aniwhere.domain.recommendList.RecommendList;
+import com.example.aniwhere.service.division.DivisionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,21 +17,35 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/recommend")
 public class AnimeRecommendController {
 
     private final RecommendService recommendService;
+    private final DivisionService divisionService;
 
-    @GetMapping("/recommend")
-    public ResponseEntity<List<RecommendList>> getAnimeRecommendList() {
-        List<RecommendList> lists = recommendService.getRecommendLists();
+    @GetMapping
+    public ResponseEntity<List<RecommendListDTO>> getAnimeRecommendList() {
+        List<RecommendListDTO> lists = recommendService.getRecommendLists();
         return ResponseEntity.ok(lists);
     }
 
+    @GetMapping("/division/{nickname}")
+    public ResponseEntity<List<AnimeSummaryDTO>> getAnimeRecommendByDivision(@PathVariable String nickname) {
+        List<AnimeSummaryDTO> list = divisionService.recommendAnimes(nickname);
+        return ResponseEntity.ok(list);
+    }
 
-//    @GetMapping
-//    public List<Anime> getRecommendations(@RequestParam String gender, @RequestParam int age) {
-//        return recommendService.recommendAnimes(gender, age);
-//    }
+    @GetMapping("/{nickname}")
+    public ResponseEntity<List<Anime>> getAnimeRecommendByNickname(
+            @PathVariable String nickname,
+            @RequestParam(defaultValue = "false") boolean refresh) {
+        if (refresh) {
+            recommendService.evictUserRecommendationCache(nickname);
+        }
+        List<Anime> recommendations = recommendService.recommendAnimesForUser(nickname);
+
+        return ResponseEntity.ok(recommendations);
+    }
 
     /**
      * 관리자용
