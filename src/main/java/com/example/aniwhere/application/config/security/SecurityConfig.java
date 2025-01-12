@@ -43,6 +43,8 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/"),
                                 new AntPathRequestMatcher("/favicon.ico"),
 								new AntPathRequestMatcher("/api/auth/kakao/callback"),
+								new AntPathRequestMatcher("/api/auth/email"),
+								new AntPathRequestMatcher("/api/auth/email/verifications-requests"),
 								new AntPathRequestMatcher("/api/auth/kakao/login"),
 								new AntPathRequestMatcher("/login/**"),
                                 new AntPathRequestMatcher("/api/login"),

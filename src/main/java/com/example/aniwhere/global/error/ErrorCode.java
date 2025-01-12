@@ -30,6 +30,12 @@ public enum ErrorCode {
 	NOT_FOUND_USER(404, "M008", "사용자를 찾을 수 없습니다."),
 	UNAUTHORIZED(401, "M009", "권한이 없습니다."),
 
+	// anime
+	NOT_FOUND_ANIME(404, "A001", "애니메이션을 찾을 수 없습니다."),
+
+	// picked anime
+	NOT_FOUND_PICKED_ANIME(404, "PA001", "찜한 애니메이션을 찾을 수 없습니다."),
+
 	// token
 	INVALID_REFRESH_TOKEN(401, "T001", "유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요."),
 	NOT_FOUND_REFRESH_TOKEN(500, "T002", "리프레시 토큰을 찾을 수 없습니다. 다시 로그인해주세요."),

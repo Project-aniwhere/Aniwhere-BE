@@ -83,6 +83,10 @@ dependencies {
 
 	// netty
 	runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64'
+
+	// h2 test database
+	runtimeOnly 'com.h2database:h2'
+	testImplementation group: 'com.h2database', name: 'h2';
 }
 
 def querydslDir = "$buildDir/generated/querydsl"
