@@ -18,10 +18,6 @@ import java.time.LocalDateTime;
 @Getter
 public abstract class Common {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
 	@CreatedDate
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
