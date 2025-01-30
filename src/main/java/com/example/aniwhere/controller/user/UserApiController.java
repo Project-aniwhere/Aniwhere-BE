@@ -76,7 +76,7 @@ public class UserApiController {
 			summary = "사용자 정보 업데이트",
 			description = "사용자가 자신의 정보를 업데이트합니다."
 	)
-	@PostMapping("/users/me/update")
+	@PatchMapping("/users/me/update")
 	public ResponseEntity<Void> updateUserInfo(@LoginUser Long userId, @RequestBody UserDTO.UserUpdateRequest updateRequest) {
 		userService.updateUserInfo(userId, updateRequest);
 		return ResponseEntity.status(HttpStatus.OK).build();
