@@ -69,6 +69,18 @@ public class User extends Common {
 		return this;
 	}
 
+	public User updateUserInfo(User updatedUser) {
+		if (!this.nickname.equals(updatedUser.getNickname())) {
+			this.nickname = updatedUser.getNickname();
+		}
+		if (!this.email.equals(updatedUser.getEmail())) {
+			this.email = updatedUser.getEmail();
+		}
+		if (!this.password.equals(updatedUser.getPassword())) {
+			this.password = updatedUser.getPassword();
+		}
+		return this;
+
 	@Builder
 	public User(String nickname, String email, String password, Role role, String birthyear, String birthday, Sex sex, String provider, String providerId) {
 		this.nickname = nickname;
@@ -80,5 +92,6 @@ public class User extends Common {
 		this.sex = sex;
 		this.provider = provider;
 		this.providerId = providerId;
+
 	}
 }

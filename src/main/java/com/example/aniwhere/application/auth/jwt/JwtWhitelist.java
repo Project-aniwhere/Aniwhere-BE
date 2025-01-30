@@ -49,6 +49,7 @@ public class JwtWhitelist {
 		// 기타 허용 경로들
 		entries.add(new WhitelistEntry("/api/anime/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/api/episodes/**", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/check/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/", HttpMethod.GET));
 
 		return entries;
