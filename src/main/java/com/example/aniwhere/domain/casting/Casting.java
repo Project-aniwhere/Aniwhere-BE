@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "casting")
 @Getter
@@ -17,12 +19,12 @@ public class Casting {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long castingId;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JsonBackReference
     @JoinColumn(name = "anime_id", nullable = false)
     private Anime anime;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "voice_actor_id", nullable = false)
     private VoiceActor voiceActor;
 

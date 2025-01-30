@@ -1,6 +1,8 @@
 package com.example.aniwhere.domain.user;
 
+import com.example.aniwhere.domain.episodeReviews.EpisodeReviews;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
+import com.example.aniwhere.domain.review.Review;
 import com.example.aniwhere.global.common.Common;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,11 +13,14 @@ import java.util.List;
 @Entity
 @Getter
 @Table(name = "USERS")
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 public class User extends Common {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id")
+	private Long id;
 
 	@Column(name = "nickname")
 	private String nickname;
@@ -46,8 +51,14 @@ public class User extends Common {
 	@Column(name = "providerId")
 	private String providerId;
 
-	@OneToMany(mappedBy = "user")
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PickedAnime> pickedAnimes = new ArrayList<>();
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<EpisodeReviews> episodeReviews = new ArrayList<>();
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Review> animeReviews = new ArrayList<>();
 
 	// 정보 업데이트
 	public User updateUser(User user) {
@@ -69,5 +80,18 @@ public class User extends Common {
 			this.password = updatedUser.getPassword();
 		}
 		return this;
+
+	@Builder
+	public User(String nickname, String email, String password, Role role, String birthyear, String birthday, Sex sex, String provider, String providerId) {
+		this.nickname = nickname;
+		this.email = email;
+		this.password = password;
+		this.role = role;
+		this.birthyear = birthyear;
+		this.birthday = birthday;
+		this.sex = sex;
+		this.provider = provider;
+		this.providerId = providerId;
+
 	}
 }

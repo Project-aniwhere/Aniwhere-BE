@@ -6,18 +6,24 @@ import com.example.aniwhere.global.common.Common;
 import jakarta.persistence.*;
 import lombok.*;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Getter
 @Table(name = "episode_reviews")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AttributeOverride(name = "id", column = @Column(name = "episode_review_id"))
 public class EpisodeReviews extends Common {
 
-	@ManyToOne
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "episodeReviews_id")
+    private Long id;
+
+	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "episode_id", nullable = false)
 	private Episodes episodes;
 
-	@ManyToOne
+	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
@@ -39,5 +45,14 @@ public class EpisodeReviews extends Common {
 	public void changeRatingAndContent(final double rating, final String content) {
 		this.rating = rating;
 		this.content = content;
+	}
+
+	public void setEpisodeReview(User user) {
+		this.user = user;
+
+		// 무한 루프 방지
+		if (!user.getEpisodeReviews().contains(this)) {
+			user.getEpisodeReviews().add(this);
+		}
 	}
 }

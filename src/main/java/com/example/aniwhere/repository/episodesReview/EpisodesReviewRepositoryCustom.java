@@ -1,13 +1,13 @@
 package com.example.aniwhere.repository.episodesReview;
 
+import com.example.aniwhere.application.config.page.PageRequest;
+import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EpisodesReviewRepositoryCustom {
-	Page<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, Pageable pageable);
-	Page<EpisodeReviewResponse> getUserEpisodeReviews(String nickname, Pageable pageable);
-	Page<EpisodeReviewResponse> getMyEpisodeReviews(Long userId, Pageable pageable);
+	PageResponse<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, PageRequest request);
+	PageResponse<EpisodeReviewResponse> getUserEpisodeReviews(String nickname, PageRequest request);
+	PageResponse<EpisodeReviewResponse> getMyEpisodeReviews(Long userId, PageRequest request);
 }
