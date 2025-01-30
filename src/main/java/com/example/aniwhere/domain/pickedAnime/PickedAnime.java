@@ -3,9 +3,7 @@ package com.example.aniwhere.domain.pickedAnime;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.common.Common;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.*;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -16,6 +14,11 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class PickedAnime extends Common {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "pickedAnime_id")
+	private Long id;
 
 	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "anime_id")

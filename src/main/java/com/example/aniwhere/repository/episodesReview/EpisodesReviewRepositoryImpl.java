@@ -1,5 +1,7 @@
 package com.example.aniwhere.repository.episodesReview;
 
+import com.example.aniwhere.application.config.page.PageRequest;
+import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.episodeReviews.EpisodeReviews;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
 import com.example.aniwhere.domain.episodeReviews.dto.QEpisodeReviewResponse;
@@ -22,7 +24,10 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, Pageable pageable) {
+	public PageResponse<EpisodeReviewResponse> getEpisodeReviews(Long episodeId, PageRequest pageRequest) {
+
+		org.springframework.data.domain.PageRequest request = pageRequest.of();
+
 		List<EpisodeReviewResponse> reviews = queryFactory
 				.select(new QEpisodeReviewResponse(
 						episodeReviews.id,
@@ -32,8 +37,8 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 				))
 				.from(episodeReviews)
 				.where(episodeReviews.episodes.id.eq(episodeId))
-				.offset(pageable.getOffset())
-				.limit(pageable.getPageSize())
+				.offset(request.getOffset())
+				.limit(request.getPageSize())
 				.fetch();
 
 		JPAQuery<EpisodeReviews> countQuery = queryFactory
@@ -41,11 +46,16 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 				.from(episodeReviews)
 				.where(episodeReviews.episodes.id.eq(episodeId));
 
-		return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchCount);
+		Page<EpisodeReviewResponse> page = PageableExecutionUtils.getPage(reviews, request, countQuery::fetchCount);
+
+		return new PageResponse<>(page);
 	}
 
 	@Override
-	public Page<EpisodeReviewResponse> getUserEpisodeReviews(String nickname, Pageable pageable) {
+	public PageResponse<EpisodeReviewResponse> getUserEpisodeReviews(String nickname, PageRequest pageRequest) {
+
+		org.springframework.data.domain.PageRequest request = pageRequest.of();
+
 		List<EpisodeReviewResponse> reviews = queryFactory
 				.select(new QEpisodeReviewResponse(
 						episodeReviews.id,
@@ -55,8 +65,8 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 				))
 				.from(episodeReviews)
 				.where(episodeReviews.user.nickname.eq(nickname))
-				.offset(pageable.getOffset())
-				.limit(pageable.getPageSize())
+				.offset(request.getOffset())
+				.limit(request.getPageSize())
 				.fetch();
 
 		JPAQuery<EpisodeReviews> countQuery = queryFactory
@@ -64,11 +74,16 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 				.from(episodeReviews)
 				.where(episodeReviews.user.nickname.eq(nickname));
 
-		return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchCount);
+		Page<EpisodeReviewResponse> page = PageableExecutionUtils.getPage(reviews, request, countQuery::fetchCount);
+
+		return new PageResponse<>(page);
 	}
 
 	@Override
-	public Page<EpisodeReviewResponse> getMyEpisodeReviews(Long userId, Pageable pageable) {
+	public PageResponse<EpisodeReviewResponse> getMyEpisodeReviews(Long userId, PageRequest pageRequest) {
+
+		org.springframework.data.domain.PageRequest request = pageRequest.of();
+
 		List<EpisodeReviewResponse> reviews = queryFactory
 				.select(new QEpisodeReviewResponse(
 						episodeReviews.id,
@@ -78,8 +93,8 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 				))
 				.from(episodeReviews)
 				.where(episodeReviews.user.id.eq(userId))
-				.offset(pageable.getOffset())
-				.limit(pageable.getPageSize())
+				.offset(request.getOffset())
+				.limit(request.getPageSize())
 				.fetch();
 
 		JPAQuery<EpisodeReviews> countQuery = queryFactory
@@ -87,6 +102,8 @@ public class EpisodesReviewRepositoryImpl implements EpisodesReviewRepositoryCus
 				.from(episodeReviews)
 				.where(episodeReviews.user.id.eq(userId));
 
-		return PageableExecutionUtils.getPage(reviews, pageable, countQuery::fetchCount);
+		Page<EpisodeReviewResponse> page = PageableExecutionUtils.getPage(reviews, request, countQuery::fetchCount);
+
+		return new PageResponse<>(page);
 	}
 }

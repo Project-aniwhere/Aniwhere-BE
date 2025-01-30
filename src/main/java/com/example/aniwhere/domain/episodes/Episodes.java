@@ -14,19 +14,25 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Getter
-@Table(name = "episodes")
+@Table(name = "EPISODES")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-@AttributeOverride(name = "id", column = @Column(name = "episode_id"))
 public class Episodes extends Common {
 
-	@ManyToOne
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "episode_id")
+	private Long id;
+
+	@ManyToOne(fetch = LAZY)
 	@JoinColumn(name = "anime_id")
 	private Anime anime;
 
-	@OneToMany(mappedBy = "episodes")
+	@OneToMany(mappedBy = "episodes", cascade = CascadeType.ALL)
 	private List<EpisodeReviews> episodeReviews = new ArrayList<>();
 
 	@Column(name = "episode_number")

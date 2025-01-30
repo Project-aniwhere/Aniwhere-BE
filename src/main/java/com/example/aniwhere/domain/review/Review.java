@@ -9,6 +9,8 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "review")
 @Getter
@@ -20,11 +22,11 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "anime_id", nullable = false)
     private Anime anime;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -36,4 +38,13 @@ public class Review {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    public void setReview(User user) {
+        this.user = user;
+
+        // 무한 루프 방지
+        if (!user.getAnimeReviews().contains(this)) {
+            user.getAnimeReviews().add(this);
+        }
+    }
 }
