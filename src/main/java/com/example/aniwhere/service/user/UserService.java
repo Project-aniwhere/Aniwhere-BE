@@ -1,7 +1,6 @@
 package com.example.aniwhere.service.user;
 
 import com.example.aniwhere.application.auth.jwt.dto.CreateTokenCommand;
-import com.example.aniwhere.domain.user.dto.UserDTO;
 import com.example.aniwhere.domain.user.dto.UserSignInResult;
 import com.example.aniwhere.service.redis.RedisService;
 import com.example.aniwhere.domain.token.dto.JwtToken;
@@ -10,15 +9,12 @@ import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.application.config.cookie.CookieConfig;
 import com.example.aniwhere.repository.user.UserRepository;
 import com.example.aniwhere.application.auth.jwt.provider.TokenProvider;
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 
 import java.util.Arrays;
@@ -126,53 +122,4 @@ public class UserService {
 		return new JwtToken(accessToken, refreshToken);
 	}
 
-	@Transactional(readOnly = true)
-	public UserDTO.UserInfoResponse getMyInfo(Long userId) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
-
-		return UserDTO.UserInfoResponse.from(user);
-	}
-
-	@Transactional(readOnly = true)
-	public boolean isNicknameAvailable(String nickName) {
-		return !userRepository.existsByNickname(nickName);
-	}
-
-	@Transactional
-	public UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest updateRequest) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
-
-		User updatedUser = User.builder()
-				.nickname(updateRequest.getNickname() != null && !updateRequest.getNickname().equals(user.getNickname())
-						? validateAndUpdateNickname(updateRequest.getNickname())
-						: user.getNickname())
-				.email(updateRequest.getEmail() != null && !updateRequest.getEmail().equals(user.getEmail())
-						? validateAndUpdateEmail(updateRequest.getEmail())
-						: user.getEmail())
-				.password(updateRequest.getPassword() != null
-						? passwordEncoder.encode(updateRequest.getPassword())
-						: user.getPassword())
-				.build();
-
-		user.updateUserInfo(updatedUser);
-
-		userRepository.save(user);
-		return UserDTO.UserInfoResponse.from(user);
-	}
-
-	private String validateAndUpdateNickname(String nickname) {
-		if (userRepository.existsByNickname(nickname)) {
-			throw new UserException(DUPLICATED_NICKNAME);
-		}
-		return nickname;
-	}
-
-	private String validateAndUpdateEmail(String email) {
-		if (userRepository.findByEmail(email).isPresent()) {
-			throw new UserException(DUPLICATED_EMAIL);
-		}
-		return email;
-	}
 }
