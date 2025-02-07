@@ -1,5 +1,7 @@
 package com.example.aniwhere.repository.episodes;
 
+import com.example.aniwhere.application.config.page.PageRequest;
+import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.domain.episodes.dto.QEpisodesDto;
@@ -7,7 +9,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
@@ -23,7 +24,10 @@ public class EpisodesRepositoryImpl implements EpisodesRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<EpisodesDto> getEpisodes(Long animeId, Pageable pageable) {
+	public PageResponse<EpisodesDto> getEpisodes(Long animeId, PageRequest pageRequest) {
+
+		org.springframework.data.domain.PageRequest request = pageRequest.of();
+
 		List<EpisodesDto> episodesList = queryFactory
 				.select(new QEpisodesDto(
 						episodes.id,
@@ -37,8 +41,8 @@ public class EpisodesRepositoryImpl implements EpisodesRepositoryCustom {
 				))
 				.from(episodes)
 				.where(episodes.anime.animeId.eq(animeId))
-				.offset(pageable.getOffset())
-				.limit(pageable.getPageSize())
+				.offset(request.getOffset())
+				.limit(request.getPageSize())
 				.orderBy(episodes.episodeNumber.asc())
 				.fetch();
 
@@ -48,6 +52,8 @@ public class EpisodesRepositoryImpl implements EpisodesRepositoryCustom {
 				.leftJoin(episodes.anime, anime)
 				.where(episodes.anime.animeId.eq(animeId));
 
-		return PageableExecutionUtils.getPage(episodesList, pageable, countQuery::fetchCount);
+		Page<EpisodesDto> page = PageableExecutionUtils.getPage(episodesList, request, countQuery::fetchCount);
+
+		return new PageResponse<>(page);
 	}
 }

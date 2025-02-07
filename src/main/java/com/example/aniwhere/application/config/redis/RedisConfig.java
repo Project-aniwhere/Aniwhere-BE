@@ -3,11 +3,13 @@ package com.example.aniwhere.application.config.redis;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
@@ -19,6 +21,24 @@ public class RedisConfig {
 
 	@Value("${spring.data.redis.port}")
 	private int port;
+
+	@Bean
+	@Primary
+	public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
+		RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+		redisTemplate.setConnectionFactory(connectionFactory);
+		redisTemplate.setEnableTransactionSupport(true);
+
+		StringRedisSerializer stringSerializer = new StringRedisSerializer();
+		redisTemplate.setKeySerializer(stringSerializer);
+		redisTemplate.setValueSerializer(stringSerializer);
+		redisTemplate.setHashKeySerializer(stringSerializer);
+		redisTemplate.setHashValueSerializer(stringSerializer);
+		redisTemplate.setDefaultSerializer(stringSerializer);
+		redisTemplate.setEnableDefaultSerializer(true);
+		redisTemplate.afterPropertiesSet();
+		return redisTemplate;
+	}
 
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {

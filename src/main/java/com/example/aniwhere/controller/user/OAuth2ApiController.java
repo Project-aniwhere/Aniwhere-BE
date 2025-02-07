@@ -31,20 +31,23 @@ public class OAuth2ApiController {
 
 	@Operation(
 			summary = "카카오 로그인 콜백",
-			description = "프론트로 리다이렉트된 URI에서 인가 코드를 파싱 후 백엔드 측에 요청을 보내 카카오 서버로부터 액세스 토큰을 발급받는다."
+			description = "카카오 로그인 콜백을 처리한다."
 	)
-	@GetMapping("/auth/kakao/callback")
-	public ResponseEntity<KakaoTokenResponse> callback(@RequestParam(name = "code") String code) {
+	@PostMapping("/auth/kakao/callback")
+	public ResponseEntity<UserSignInResponse> callback(@RequestParam(name = "code") String code,
+													   HttpServletResponse response) {
 
 		KakaoTokenResponse tokenResponse = kakaoApi.getToken(code);
-		KakaoProfileResponse profile = kakaoApi.getProfileInfo(tokenResponse.getAccess_token());
+		KakaoProfileResponse profileInfo = kakaoApi.getProfileInfo(tokenResponse.getAccess_token());
 
-		redisService.saveOAuthAccessToken(profile.getKakao_account().getEmail(), tokenResponse.getAccess_token());
-		redisService.saveOAuthRefreshToken(profile.getKakao_account().getEmail(), tokenResponse.getRefresh_token());
+		UserSignInResult signInResult = kakaoService.loginKakaoUser(profileInfo, tokenResponse.getAccess_token());
+		redisService.saveOAuthAccessToken(profileInfo.getKakao_account().getEmail(), tokenResponse.getAccess_token());
+		redisService.saveOAuthRefreshToken(profileInfo.getKakao_account().getEmail(), tokenResponse.getRefresh_token());
 
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(tokenResponse);
+		signInResult.getCookies().forEach(cookie ->
+				response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()));
+
+		return ResponseEntity.ok(signInResult.getUserSignInResponse());
 	}
 
 	@Operation(
@@ -58,21 +61,5 @@ public class OAuth2ApiController {
 		return ResponseEntity
 				.status(HttpStatus.OK)
 				.build();
-	}
-
-	@Operation(
-			summary = "카카오 로그인",
-			description = "카카오 게정으로 로그인한다."
-	)
-	@PostMapping("/auth/kakao/login")
-	public ResponseEntity<UserSignInResponse> signUp(@RequestBody AccessTokenRequest request, HttpServletResponse response) {
-
-		KakaoProfileResponse profileInfo = kakaoApi.getProfileInfo(request.accessToken());
-		UserSignInResult signInResult = kakaoService.loginKakaoUser(profileInfo, request.accessToken());
-
-		signInResult.getCookies().forEach(cookie ->
-				response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString()));
-
-		return ResponseEntity.ok(signInResult.getUserSignInResponse());
 	}
 }

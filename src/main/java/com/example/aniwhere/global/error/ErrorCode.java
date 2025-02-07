@@ -29,6 +29,13 @@ public enum ErrorCode {
 	PASSWORD_MISMATCH(400, "M007", "비밀번호가 일치하지 않습니다."),
 	NOT_FOUND_USER(404, "M008", "사용자를 찾을 수 없습니다."),
 	UNAUTHORIZED(401, "M009", "권한이 없습니다."),
+	USER_UPDATE_FAILED(400, "M010", "사용자 정보 업데이트에 실패했습니다"),
+
+	// anime
+	NOT_FOUND_ANIME(404, "A001", "애니메이션을 찾을 수 없습니다."),
+
+	// picked anime
+	NOT_FOUND_PICKED_ANIME(404, "PA001", "찜한 애니메이션을 찾을 수 없습니다."),
 
 	// token
 	INVALID_REFRESH_TOKEN(401, "T001", "유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요."),
@@ -43,7 +50,11 @@ public enum ErrorCode {
 	ALREADY_EXIST_EPISODE_REVIEW(400, "EP002", "리뷰는 한 번만 작성할 수 있습니다."),
 	NOT_FOUND_EPISODE_REVIEW(404, "EP003", "작성한 에피소드 리뷰가 없습니다."),
 
-	OAUTH2_BAD_GATEWAY_ERROR(502, "O001", "OAuth2 소셜 로그인 연동 중 에러가 발생하였습니다.");
+	// oauth
+	OAUTH2_BAD_GATEWAY_ERROR(502, "O001", "OAuth2 소셜 로그인 연동 중 에러가 발생하였습니다."),
+
+	// history
+	NOT_FOUND_HISTORY(404, "H001", "이력을 찾을 수 없습니다.");
 
 	private final int status;
 	private final String code;

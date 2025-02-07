@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,6 +24,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
+@EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
 
@@ -43,28 +45,29 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/"),
                                 new AntPathRequestMatcher("/favicon.ico"),
 								new AntPathRequestMatcher("/api/auth/kakao/callback"),
+								new AntPathRequestMatcher("/api/auth/email"),
+								new AntPathRequestMatcher("/api/auth/email/verifications-requests"),
 								new AntPathRequestMatcher("/api/auth/kakao/login"),
 								new AntPathRequestMatcher("/login/**"),
-                                new AntPathRequestMatcher("/api/login"),
-                                new AntPathRequestMatcher("/api/token"),
-                                new AntPathRequestMatcher("/api/auth/**"),
+								new AntPathRequestMatcher("/api/login"),
+								new AntPathRequestMatcher("/api/token"),
+								new AntPathRequestMatcher("/api/auth/**"),
 								new AntPathRequestMatcher("/api/anime/**"),
 								new AntPathRequestMatcher("/api/episodes/**"),
+                                new AntPathRequestMatcher("/api/check/**"),
                                 new AntPathRequestMatcher("/recommend"),
                                 new AntPathRequestMatcher("/anime/*"),
 								new AntPathRequestMatcher("/api/v3/api-docs/**"),
-								new AntPathRequestMatcher("/api/swagger-ui/**"),
-                                new AntPathRequestMatcher("/api/recommend/**"),
-                                new AntPathRequestMatcher("/api/anime/**")
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler))
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+								new AntPathRequestMatcher("/api/swagger-ui/**")
+						).permitAll()
+						.anyRequest().authenticated()
+				)
+				.exceptionHandling(e -> e
+						.authenticationEntryPoint(customAuthenticationEntryPoint)
+						.accessDeniedHandler(customAccessDeniedHandler))
+				.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+				.build();
+	}
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
