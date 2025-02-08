@@ -1,6 +1,7 @@
 package com.example.aniwhere.service.anime.service;
 
 import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.domain.pickedAnime.PickedAnime;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -23,19 +24,17 @@ public class AnimeRecommender {
     private final AnimeFeatureExtractorService extractorService;
     private final AnimeRepository animeRepository;
 
-    /**
-     * 추후 메모리 문제로 수정.
-     */
     private double[][] featureVectors;
     private Anime[] allAnimesArray;
 
+    @Transactional
     @PostConstruct
     @Scheduled(cron = "0 0 0 1 * *")
     public void initialize() {
         List<Anime> allAnimes = fetchAllAnimesWithCategories();
 
         this.featureVectors = allAnimes.stream()
-                .map(extractorService::extractFeatures)
+                .map(anime -> extractorService.extractFeatures(anime.getAnimeId()))
                 .toArray(double[][]::new);
 
         this.allAnimesArray = allAnimes.toArray(new Anime[0]);
@@ -46,30 +45,31 @@ public class AnimeRecommender {
         return animeRepository.findAllWithCategories();
     }
 
-    public List<Anime> recommend(List<Anime> userLikedAnimes, int k) {
+    public List<Anime> recommend(List<Anime> userPickedAnimes, int k) { // ✅ List<Anime>으로 변경
         if (featureVectors == null || allAnimesArray == null) {
             throw new IllegalStateException("Recommender is not initialized.");
         }
 
-        KDTree<Anime> kdTree = new KDTree<>(featureVectors, allAnimesArray); //kdTree 생성
+        KDTree<Anime> kdTree = new KDTree<>(featureVectors, allAnimesArray); // kdTree 생성
 
         Set<Anime> recommendations = new HashSet<>();
-        for (Anime likedAnime : userLikedAnimes) {
-            double[] likedFeatures = extractorService.extractFeatures(likedAnime);
+        for (Anime pickedAnime : userPickedAnimes) { // ✅ PickedAnime → Anime으로 변경
+            double[] pickedFeatures = extractorService.extractFeatures(pickedAnime.getAnimeId());
 
-            Neighbor<double[], Anime>[] neighbors = kdTree.search(likedFeatures, k);
+            Neighbor<double[], Anime>[] neighbors = kdTree.search(pickedFeatures, k);
 
             for (Neighbor<double[], Anime> neighbor : neighbors) {
                 Anime recommendedAnime = neighbor.value;
 
-
-                if (!userLikedAnimes.contains(recommendedAnime)) {// 중복 및 이미 좋아요한 애니 제외
+                if (userPickedAnimes.stream().noneMatch(p -> p.equals(recommendedAnime))) { // ✅ getAnime() 제거
                     recommendations.add(recommendedAnime);
                 }
             }
         }
 
         List<Anime> resultList = new ArrayList<>(recommendations);
-        return resultList.subList(0, Math.min(resultList.size(), 10)); //최대 10개
+        return resultList.subList(0, Math.min(resultList.size(), 10)); // 최대 10개
     }
+
 }
+

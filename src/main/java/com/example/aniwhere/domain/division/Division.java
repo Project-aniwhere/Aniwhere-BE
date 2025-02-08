@@ -30,8 +30,6 @@ public class Division {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "anime_id")
     )
-    @JsonIgnore
+
     private List<Anime> divisionAnimes = new ArrayList<>();
-
-
 }
