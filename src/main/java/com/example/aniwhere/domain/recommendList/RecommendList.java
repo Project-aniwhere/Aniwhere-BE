@@ -25,11 +25,6 @@ public class RecommendList extends Common {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ManyToMany
-    @JoinTable(
-            name = "recommend_list_anime",
-            joinColumns = @JoinColumn(name = "recommend_id"),
-            inverseJoinColumns = @JoinColumn(name = "anime_id")
-    )
-    private List<Anime> animes = new ArrayList<>();
+    @OneToMany(mappedBy = "recommendList", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecommendListAnime> animes = new ArrayList<>();
 }

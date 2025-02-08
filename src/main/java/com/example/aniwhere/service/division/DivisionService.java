@@ -3,6 +3,7 @@ package com.example.aniwhere.service.division;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
 import com.example.aniwhere.domain.division.Division;
+import com.example.aniwhere.domain.division.DivisionAnime;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
 import com.example.aniwhere.domain.rating.Rating;
 import com.example.aniwhere.domain.user.User;
@@ -39,7 +40,6 @@ public class DivisionService {
     public void updateAnimeLikesByDivision() {
         List<Division> divisions = divisionRepository.findAll();
 
-        // 기존 데이터 초기화
         divisions.forEach(division -> division.getDivisionAnimes().clear());
 
         List<PickedAnime> pickedAnimes = pickedAnimeRepository.findAll(); // PickedAnime 사용
@@ -62,9 +62,21 @@ public class DivisionService {
         for (String divisionName : groupedAnimes.keySet()) {
             Division division = divisionMap.getOrDefault(divisionName, new Division());
             division.setName(divisionName);
-            division.setDivisionAnimes(groupedAnimes.get(divisionName));
+
+            division.getDivisionAnimes().clear();
+
+            List<DivisionAnime> divisionAnimeList = groupedAnimes.get(divisionName).stream()
+                    .map(anime -> DivisionAnime.builder()
+                            .division(division)
+                            .anime(anime)
+                            .build())
+                    .collect(Collectors.toList());
+
+            division.getDivisionAnimes().addAll(divisionAnimeList);
+
             divisionRepository.save(division);
         }
+
     }
 
     /**
@@ -84,12 +96,15 @@ public class DivisionService {
                 .orElseThrow(() -> new RuntimeException("Division not found: " + divisionName));
 
         return division.getDivisionAnimes().stream()
-                .map(anime -> AnimeSummaryDTO.builder()
-                        .animeId(anime.getAnimeId())
-                        .title(anime.getTitle())
-                        .poster(anime.getPoster())
-                        .averageRating(calculateAverageRating(anime.getRatings()))
-                        .build())
+                .map(divisionAnime -> {
+                    Anime anime = divisionAnime.getAnime();
+                    return AnimeSummaryDTO.builder()
+                            .animeId(anime.getAnimeId())
+                            .title(anime.getTitle())
+                            .poster(anime.getPoster())
+                            .averageRating(calculateAverageRating(anime.getRatings()))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

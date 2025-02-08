@@ -38,17 +38,20 @@ public class RecommendService {
                         .title(recommendList.getTitle())
                         .description(recommendList.getDescription())
                         .animes(recommendList.getAnimes().stream()
-                                .map(anime -> AnimeSummaryDTO.builder()
-                                        .animeId(anime.getAnimeId())
-                                        .title(anime.getTitle())
-                                        .poster(anime.getPoster())
-                                        .build()
-                                )
+                                .map(recommendListAnime -> {
+                                    Anime anime = recommendListAnime.getAnime();
+                                    return AnimeSummaryDTO.builder()
+                                            .animeId(anime.getAnimeId())
+                                            .title(anime.getTitle())
+                                            .poster(anime.getPoster())
+                                            .build();
+                                })
                                 .collect(Collectors.toList())
                         )
                         .build()
                 )
                 .collect(Collectors.toList());
+
     }
 
     /**

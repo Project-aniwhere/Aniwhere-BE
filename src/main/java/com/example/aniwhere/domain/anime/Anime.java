@@ -1,6 +1,7 @@
 package com.example.aniwhere.domain.anime;
 
 import com.example.aniwhere.domain.casting.Casting;
+import com.example.aniwhere.domain.category.AnimeCategory;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.rating.Rating;
@@ -11,6 +12,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +25,7 @@ import java.util.Set;
 public class Anime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "anime_id")
     private Long animeId;
 
     private String title;
@@ -69,13 +72,8 @@ public class Anime {
     private List<Rating> ratings = new ArrayList<>();
 
 
-    @ManyToMany
-    @JoinTable(
-            name = "animecategories",
-            joinColumns = @JoinColumn(name = "anime_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private Set<Category> categories;
+    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AnimeCategory> animeCategories = new HashSet<>();
 
     @OneToMany(mappedBy = "anime")
     private final List<Episodes> episodesList = new ArrayList<>();

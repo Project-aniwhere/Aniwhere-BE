@@ -31,12 +31,12 @@ public class Rating extends Common {
     @Column(name = "score", precision = 10)
     private Double rating;
 
-    public void setReview(User user) {
-        this.user = user;
-
-        // 무한 루프 방지
-        if (!user.getAnimeReviews().contains(this)) {
-            user.getAnimeReviews().add(this);
-        }
-    }
+//    public void setReview(User user) {
+//        this.user = user;
+//
+//        // 무한 루프 방지
+//        if (!user.getAnimeReviews().contains(this)) {
+//            user.getAnimeReviews().add(this);
+//        }
+//    }
 }

@@ -1,6 +1,7 @@
 package com.example.aniwhere.controller.anime.controller;
 
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
+import com.example.aniwhere.domain.anime.dto.AnimeQuarterDTO;
 import com.example.aniwhere.service.anime.service.AnimeService;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.InvalidInputException;
@@ -42,5 +43,11 @@ public class AnimeController {
         List<AnimeGroupedByWeekdayDTO> animeResponse = animeService.getAnimeWeekdayList(year, quarter);
         return ResponseEntity.ok(animeResponse);
     }
+
+//    @PostMapping("/request")
+//    public ResponseEntity<Void> requestAnime(@RequestParam String title) {
+//        animeService.requestAnime(title);
+//        return ResponseEntity.ok().build(); // 200 OK 응답만 반환 (Body 없음)
+//    }
 
 }

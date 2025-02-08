@@ -24,12 +24,6 @@ public class Division {
     @Column(name = "last_updated", nullable = false)
     private LocalDate lastUpdated;
 
-    @ManyToMany
-    @JoinTable(
-            name = "division_anime",
-            joinColumns = @JoinColumn(name = "group_id"),
-            inverseJoinColumns = @JoinColumn(name = "anime_id")
-    )
-
-    private List<Anime> divisionAnimes = new ArrayList<>();
+    @OneToMany(mappedBy = "division", cascade = CascadeType.ALL)
+    private List<DivisionAnime> divisionAnimes = new ArrayList<>();
 }

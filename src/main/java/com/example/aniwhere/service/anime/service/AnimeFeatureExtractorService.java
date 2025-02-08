@@ -1,6 +1,7 @@
 package com.example.aniwhere.service.anime.service;
 
 import com.example.aniwhere.domain.anime.Anime;
+import com.example.aniwhere.domain.category.AnimeCategory;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
 import com.example.aniwhere.repository.category.CategoryRepository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -26,7 +28,13 @@ public class AnimeFeatureExtractorService {
 
         List<String> allGenres = categoryRepository.findAllCategoryNames();
 
-        double[] genreFeatures = encodeCategories(anime.getCategories(), allGenres);
+        double[] genreFeatures = encodeCategories(
+                anime.getAnimeCategories().stream()
+                        .map(AnimeCategory::getCategory)
+                        .collect(Collectors.toSet()),
+                allGenres
+        );
+
 
         double studioFeature = encodeStudio(anime.getStudio());
         double isAdultFeature = anime.getIsAdult() != null && anime.getIsAdult() ? 1.0 : 0.0;
