@@ -1,7 +1,7 @@
 package com.example.aniwhere.service.anime.service;
 
 import com.example.aniwhere.repository.casting.repository.CastingRepository;
-import com.example.aniwhere.repository.review.repository.ReviewRepository;
+import com.example.aniwhere.repository.rating.repository.RatingRepository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Year;
@@ -29,19 +28,19 @@ import java.util.stream.Collectors;
 public class AnimeService {
     private final AnimeRepository animeRepository;
     private final CastingRepository castingRepository;
-    private final ReviewRepository reviewRepository;
+    private final RatingRepository ratingRepository;
 
 
-    public BigDecimal calculateAverageRating(List<AnimeResponseDTO.ReviewDTO> reviews) {
+    public Double calculateAverageRating(List<AnimeResponseDTO.RatingDTO> reviews) {
         if (reviews == null || reviews.isEmpty()) {
-            return BigDecimal.ZERO;
+            return 0.0;
         }
 
-        BigDecimal totalRating = reviews.stream()
-                .map(AnimeResponseDTO.ReviewDTO::getRating)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        double totalRating = reviews.stream()
+                .mapToDouble(r -> r.getRating().doubleValue()) // BigDecimal → double 변환
+                .sum();
 
-        return totalRating.divide(new BigDecimal(reviews.size()), 2, RoundingMode.HALF_UP);
+        return totalRating / reviews.size();
     }
     @Transactional(readOnly = true)
     public AnimeResponseDTO getAnimeById(long animeId) {
@@ -57,17 +56,16 @@ public class AnimeService {
                         .build())
                 .collect(Collectors.toList());
 
-        List<AnimeResponseDTO.ReviewDTO> reviews = reviewRepository.findByAnime_AnimeId(animeId).stream()
-                .map(review -> AnimeResponseDTO.ReviewDTO.builder()
+        List<AnimeResponseDTO.RatingDTO> ratings = ratingRepository.findByAnime_AnimeId(animeId).stream()
+                .map(review -> AnimeResponseDTO.RatingDTO.builder()
                         .reviewId(review.getReviewId())
                         .userId(review.getUser().getProviderId().toString())
                         .rating(review.getRating())
-                        .content(review.getContent())
                         .createdAt(review.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
 
-        BigDecimal averageRating = calculateAverageRating(reviews);
+        Double averageRating = calculateAverageRating(ratings);
 
         return AnimeResponseDTO.builder()
                 .animeId(anime.getAnimeId())
@@ -81,7 +79,6 @@ public class AnimeService {
                 .studio(anime.getStudio())
                 .releaseDate(anime.getReleaseDate())
                 .endDate(anime.getEndDate())
-                .episodeNum(anime.getEpisodesNum())
                 .runningTime(anime.getRunningTime())
                 .status(anime.getStatus())
                 .trailer(anime.getTrailer())
@@ -95,7 +92,7 @@ public class AnimeService {
                         .map(Category::getCategoryName)
                         .collect(Collectors.toSet()))
                 .castings(castings)
-                .reviews(reviews)
+                .ratings(ratings)
                 .episodes(null)
                 .averageRating(averageRating)
                 .build();
