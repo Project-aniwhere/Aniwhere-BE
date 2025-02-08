@@ -15,10 +15,10 @@ import java.util.Arrays;
 @Slf4j
 public class CookieConfig {
 
-	@Value("${jwt.access_token_expiration_time:18000000}")
+	@Value("${jwt.access_token_expiration_time}")
 	private long accessTokenExpirationTime;
 
-	@Value("${jwt.refresh_token_expiration_time:1209600000}")
+	@Value("${jwt.refresh_token_expiration_time}")
 	private long refreshTokenExpirationTime;
 
 	public ResponseCookie createAccessTokenCookie(String name, String value) {
