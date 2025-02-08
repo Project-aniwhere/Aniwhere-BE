@@ -1,23 +1,21 @@
-package com.example.aniwhere.domain.review;
+package com.example.aniwhere.domain.rating;
 
 
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.user.User;
+import com.example.aniwhere.global.common.Common;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "review")
+@Table(name = "rating")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Review {
+public class Rating extends Common {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
@@ -30,14 +28,8 @@ public class Review {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "rating", precision = 10, scale = 2)
-    private BigDecimal rating;
-
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "score", precision = 10)
+    private Double rating;
 
     public void setReview(User user) {
         this.user = user;
