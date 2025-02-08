@@ -1,6 +1,9 @@
 package com.example.aniwhere.domain.anime.dto;
 
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,17 +16,6 @@ import java.util.Set;
 
 
 public class AnimeDTO {
-
-
-    @Getter
-    @Setter
-    @Builder
-    public static class QuarterAnimeResponseDTO {//분기별 애니메이션 반환
-        private Long animeId;
-        private String title;
-        private String poster;
-        private String weekday;
-    }
 
     @Getter
     @Setter
@@ -50,7 +42,7 @@ public class AnimeDTO {
         private Boolean isAdult;
         private String duration;
         private String weekday;
-        private List<ReviewDTO> reviews;
+        private List<RatingDTO> ratings;
         private String backgroundImage;
         private Set<String> categories; //장르
 
@@ -58,7 +50,7 @@ public class AnimeDTO {
 
         private List<EpisodeDTO> episodes;
 
-        private BigDecimal averageRating;
+        private Double averageRating;
 
         @Getter
         @Setter
@@ -95,10 +87,14 @@ public class AnimeDTO {
         @Getter
         @Setter
         @Builder
-        public static class ReviewDTO {
+        public static class RatingDTO {
             private Long reviewId;         // 리뷰 ID
-            private String userId;         // 사용자 ID (providerId의 문자열 형태)
-            private BigDecimal rating;            // 평점
+            private Long animeId;          // 애니메이션 ID
+            private String userId;         // 사용자 ID (providerId 형태)
+            @NotNull
+            @DecimalMin("0.0")
+            @DecimalMax("5.0")
+            private Double rating;     // 평점
             private String content;        // 리뷰 내용
             private LocalDateTime createdAt; // 리뷰 작성 시간
         }

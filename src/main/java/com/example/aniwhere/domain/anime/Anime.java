@@ -3,7 +3,7 @@ package com.example.aniwhere.domain.anime;
 import com.example.aniwhere.domain.casting.Casting;
 import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.domain.episodes.Episodes;
-import com.example.aniwhere.domain.review.Review;
+import com.example.aniwhere.domain.rating.Rating;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,8 +35,6 @@ public class Anime {
     private String studio;
     private LocalDate releaseDate;
     private LocalDate endDate;
-    @Column(name = "episodes")
-    private Integer episodesNum;
     private String runningTime;
     private String status;
     private String trailer;
@@ -65,11 +63,10 @@ public class Anime {
     }
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Casting> castings;
+    private List<Casting> castings = new ArrayList<>();
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews;
+    private List<Rating> ratings = new ArrayList<>();
 
 
     @ManyToMany
@@ -81,7 +78,7 @@ public class Anime {
     private Set<Category> categories;
 
     @OneToMany(mappedBy = "anime")
-    private final List<Episodes> episodesList = new ArrayList<Episodes>();
+    private final List<Episodes> episodesList = new ArrayList<>();
 
     public void addEpisodes(Episodes episodes) {
         this.episodesList.add(episodes);
@@ -89,8 +86,4 @@ public class Anime {
             episodes.registerAnime(this);
         }
     }
-
-    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Episodes> episodes;
 }
