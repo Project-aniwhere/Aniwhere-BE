@@ -39,7 +39,7 @@ public class AdminApiController {
 	@PostMapping("/admin/evaluation")
 	public ResponseEntity<EvaluationResponseDto> evaluate(final @RequestBody EvaluationRequestDto dto) {
 
-		EvaluationResponseDto result = adminService.processEvaluation(dto.status(), dto.message());
+		EvaluationResponseDto result = adminService.processEvaluation(dto);
 
 		return ResponseEntity
 				.status(HttpStatus.OK)
