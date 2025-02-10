@@ -53,7 +53,11 @@ public enum ErrorCode {
 	OAUTH2_BAD_GATEWAY_ERROR(502, "O001", "OAuth2 소셜 로그인 연동 중 에러가 발생하였습니다."),
 
 	// history
-	NOT_FOUND_HISTORY(404, "H001", "이력을 찾을 수 없습니다.");
+	NOT_FOUND_HISTORY(404, "H001", "이력을 찾을 수 없습니다."),
+
+	// notification
+	NOT_FOUND_NOTIFICATION(404, "N001", "알림을 찾을 수 없습니다"),
+	INVALID_REDIS_MESSAGE(404, "N002", "유효하지 않은 메시지입니다.");
 
 	private final int status;
 	private final String code;
