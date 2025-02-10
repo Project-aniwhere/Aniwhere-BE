@@ -29,29 +29,30 @@ public class History extends Common {
 	@JoinColumn(name = "receiver_id")
 	private User receiver;
 
-	@Column(name = "anime_title")
-	private String animeTitle;
+	@Column(name = "content")
+	private String content;
 
 	@Column(name = "status")
 	@Enumerated(EnumType.STRING)
-	private Status status;
+	private ReplyStatus status;
 
 	@Column(name = "approved_at")
-	private LocalDateTime approved_at;
+	private LocalDateTime approvedAt;
 
 	@Column(name = "reply")
 	private String reply;
 
 	@Builder
-	private History(User sender, User receiver, String animeTitle, Status status) {
+	private History(User sender, User receiver, ReplyStatus status, String content) {
 		this.sender = sender;
 		this.receiver = receiver;
-		this.animeTitle = animeTitle;
 		this.status = status;
+		this.content = content;
 	}
 
-	public void historyUpdate(Status status, String reply) {
-		this.reply = reply;
+	// 히스토리 업데이트
+	public void historyUpdate(ReplyStatus status, LocalDateTime approvedAt) {
 		this.status = status;
+		this.approvedAt = LocalDateTime.now();
 	}
 }
