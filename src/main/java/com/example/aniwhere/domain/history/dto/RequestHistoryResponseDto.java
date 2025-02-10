@@ -1,7 +1,7 @@
 package com.example.aniwhere.domain.history.dto;
 
 import com.example.aniwhere.domain.history.History;
-import com.example.aniwhere.domain.history.Status;
+import com.example.aniwhere.domain.history.ReplyStatus;
 
 import java.time.LocalDateTime;
 
@@ -9,8 +9,8 @@ public record RequestHistoryResponseDto(
 		Long id,
 		HistoryUserResponseDto sender,
 		HistoryUserResponseDto receiver,
-		String animeTitle,
-		Status status,
+		String content,
+		ReplyStatus status,
 		String reply,
 		LocalDateTime approvedAt
 ) {
@@ -19,10 +19,10 @@ public record RequestHistoryResponseDto(
 				history.getId(),
 				HistoryUserResponseDto.from(history.getSender()),
 				HistoryUserResponseDto.from(history.getReceiver()),
-				history.getAnimeTitle(),
+				history.getContent(),
 				history.getStatus(),
 				history.getReply(),
-				history.getApproved_at()
+				history.getApprovedAt()
 		);
 	}
 }
