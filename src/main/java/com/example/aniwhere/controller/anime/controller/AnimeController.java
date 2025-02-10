@@ -1,13 +1,18 @@
 package com.example.aniwhere.controller.anime.controller;
 
+import com.example.aniwhere.application.auth.resolver.LoginUser;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
+import com.example.aniwhere.domain.history.dto.HistoryUserDto;
 import com.example.aniwhere.service.anime.service.AnimeService;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.InvalidInputException;
+import com.example.aniwhere.service.history.HistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +25,8 @@ import java.util.Map;
 public class AnimeController {
 
     private final AnimeService animeService;
+    private final HistoryService historyService;
+
     /**
      *
      * @param year 방영년도
@@ -61,4 +68,18 @@ public class AnimeController {
         return ResponseEntity.ok(animeResponse);
     }
 
+    @Operation(
+            summary = "[사용자용] 작품 요청",
+            description = "관리자에게 작품 요청을 보낸다."
+    )
+    @PostMapping("/anime/requests")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Void> requestAnime(@LoginUser final Long userId,
+                                             @RequestBody final HistoryUserDto dto) {
+        historyService.requestAnime(userId, dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
 }
