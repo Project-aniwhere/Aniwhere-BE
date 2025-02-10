@@ -1,34 +1,23 @@
 package com.example.aniwhere.domain.history.dto;
 
 import com.example.aniwhere.domain.history.History;
-import com.example.aniwhere.domain.history.Status;
+import com.example.aniwhere.domain.history.ReplyStatus;
 import com.example.aniwhere.domain.user.User;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.Builder;
 
 public record HistoryUserDto(
 
 		Long senderId,
-		List<Long> receiverId,
-		String animeTitle,
-		String nickname,
-		Status status,
-		LocalDateTime createdAt
+		Long receiverId,
+		String content,
+		ReplyStatus status
 ) {
 
-	public List<History> toEntity(User sender, List<User> receivers) {
-		return receivers.stream()
-				.map(receiver -> getHistory(sender, receiver))
-				.collect(Collectors.toList());
-	}
-
-	private History getHistory(User sender, User receiver) {
+	@Builder
+	public History toEntity(User sender, User receiver) {
 		return History.builder()
 				.sender(sender)
 				.receiver(receiver)
-				.animeTitle(animeTitle)
 				.status(status)
 				.build();
 	}
