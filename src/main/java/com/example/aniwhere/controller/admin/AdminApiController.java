@@ -6,8 +6,6 @@ import com.example.aniwhere.domain.admin.dto.EvaluationRequestDto;
 import com.example.aniwhere.domain.admin.dto.EvaluationResponseDto;
 import com.example.aniwhere.domain.admin.dto.UserListDto;
 import com.example.aniwhere.domain.user.Sex;
-import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
-import com.example.aniwhere.repository.review.repository.ReviewRepository;
 import com.example.aniwhere.repository.user.UserRepository;
 import com.example.aniwhere.service.admin.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +35,7 @@ public class AdminApiController {
 	@PostMapping("/admin/evaluation")
 	public ResponseEntity<EvaluationResponseDto> evaluate(final @RequestBody EvaluationRequestDto dto) {
 
-		EvaluationResponseDto result = adminService.processEvaluation(dto.status(), dto.message());
+		EvaluationResponseDto result = adminService.processEvaluation(dto);
 
 		return ResponseEntity
 				.status(HttpStatus.OK)
