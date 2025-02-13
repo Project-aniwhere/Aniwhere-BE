@@ -2,6 +2,7 @@ package com.example.aniwhere.service.anime.service;
 
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.division.Division;
+import com.example.aniwhere.domain.division.DivisionAnime;
 import com.example.aniwhere.repository.division.DivisionRepository;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.repository.user.UserRepository;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.example.aniwhere.domain.user.Sex.male;
 
@@ -90,11 +92,24 @@ public class ClusteringService {
 
     //결과 저장.
     private void saveDivision(String groupName, List<Anime> animes) {
-        Division division = divisionRepository.findByName(groupName).get();
+        Division division = divisionRepository.findByName(groupName)
+                .orElseThrow(() -> new IllegalArgumentException("Division not found: " + groupName));
+
         division.setName(groupName);
         division.setLastUpdated(LocalDate.now());
+
         division.getDivisionAnimes().clear();
-        division.getDivisionAnimes().addAll(animes);
+
+        List<DivisionAnime> divisionAnimeList = animes.stream()
+                .map(anime -> DivisionAnime.builder()
+                        .division(division)
+                        .anime(anime)
+                        .build())
+                .collect(Collectors.toList());
+
+        division.getDivisionAnimes().addAll(divisionAnimeList);
+
         divisionRepository.save(division);
     }
+
 }

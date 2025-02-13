@@ -3,6 +3,7 @@ package com.example.aniwhere.controller.anime.controller;
 import com.example.aniwhere.application.auth.resolver.LoginUser;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.domain.history.dto.HistoryUserDto;
+import com.example.aniwhere.domain.anime.dto.AnimeQuarterDTO;
 import com.example.aniwhere.service.anime.service.AnimeService;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.InvalidInputException;
@@ -42,10 +43,6 @@ public class AnimeController {
             throw new InvalidInputException("분기는 1 이상, 4 이하여야 합니다.", ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        Map<String, List<QuarterAnimeResponseDTO>> animeGroupedByWeekday = animeService.getAnimeByYearAndQuarter(year, quarter);
-
-        return ResponseEntity.ok(animeGroupedByWeekday);
-    }
 
     @GetMapping("/anime/{id}")
     public ResponseEntity<AnimeResponseDTO> getAnimeById(@PathVariable int id) {
@@ -68,6 +65,7 @@ public class AnimeController {
         return ResponseEntity.ok(animeResponse);
     }
 
+
     @Operation(
             summary = "[사용자용] 작품 요청",
             description = "관리자에게 작품 요청을 보낸다."
@@ -82,4 +80,5 @@ public class AnimeController {
                 .status(HttpStatus.CREATED)
                 .build();
     }
+
 }

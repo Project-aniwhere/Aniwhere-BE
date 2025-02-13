@@ -1,6 +1,7 @@
 package com.example.aniwhere.domain.division;
 
 import com.example.aniwhere.domain.anime.Anime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,13 +24,6 @@ public class Division {
     @Column(name = "last_updated", nullable = false)
     private LocalDate lastUpdated;
 
-    @ManyToMany
-    @JoinTable(
-            name = "division_anime", // 중간 테이블 이름
-            joinColumns = @JoinColumn(name = "group_id"), // division 테이블의 외래 키
-            inverseJoinColumns = @JoinColumn(name = "anime_id") // anime 테이블의 외래 키
-    )
-    private List<Anime> divisionAnimes = new ArrayList<>();
-
-
+    @OneToMany(mappedBy = "division", cascade = CascadeType.ALL)
+    private List<DivisionAnime> divisionAnimes = new ArrayList<>();
 }

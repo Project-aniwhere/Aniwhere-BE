@@ -1,7 +1,7 @@
 package com.example.aniwhere.service.anime.service;
 
 import com.example.aniwhere.repository.casting.repository.CastingRepository;
-import com.example.aniwhere.repository.review.repository.ReviewRepository;
+import com.example.aniwhere.repository.rating.repository.RatingRepository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
@@ -27,37 +28,21 @@ import java.util.stream.Collectors;
 public class AnimeService {
     private final AnimeRepository animeRepository;
     private final CastingRepository castingRepository;
-    private final ReviewRepository reviewRepository;
-
-    public Map<String, List<QuarterAnimeResponseDTO>> getAnimeByYearAndQuarter(int year, int quarter) {
-        List<Anime> animes = animeRepository.findByYearAndQuarter(year, quarter);
+    private final RatingRepository ratingRepository;
 
 
-        List<String> weekdays = Arrays.asList("월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일");
+    public Double calculateAverageRating(List<AnimeResponseDTO.RatingDTO> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            return 0.0;
+        }
 
-        // 요일별로 response
-        Map<String, List<QuarterAnimeResponseDTO>> groupedAnimes = weekdays.stream()
-                .collect(Collectors.toMap(day -> day, day -> new ArrayList<>(), (a, b) -> a, LinkedHashMap::new));
+        double totalRating = reviews.stream()
+                .mapToDouble(r -> r.getRating().doubleValue()) // BigDecimal → double 변환
+                .sum();
 
-        // 애니메이션 요일별로
-        animes.stream()
-                .filter(anime -> weekdays.contains(anime.getWeekday())) // 요일이 없는 경우 고려
-                .map(this::convertToDTO)
-                .forEach(anime -> groupedAnimes.get(anime.getWeekday()).add(anime));
-
-        return groupedAnimes;
+        return totalRating / reviews.size();
     }
-
-    //Anime response로 변환
-    private QuarterAnimeResponseDTO convertToDTO(Anime anime) {
-        return QuarterAnimeResponseDTO.builder()
-                .animeId(anime.getAnimeId())
-                .title(anime.getTitle())
-                .poster(anime.getPoster())
-                .weekday(anime.getWeekday())
-                .build();
-    }
-
+    @Transactional(readOnly = true)
     public AnimeResponseDTO getAnimeById(long animeId) {
         Anime anime = animeRepository.findById(animeId)
                 .orElseThrow(() -> new ResourceNotFoundException("해당 애니메이션에 대한 정보를 찾을 수 없습니다.", ErrorCode.NOT_FOUND_USER));
@@ -71,15 +56,16 @@ public class AnimeService {
                         .build())
                 .collect(Collectors.toList());
 
-        List<AnimeResponseDTO.ReviewDTO> reviews = reviewRepository.findByAnime_AnimeId(animeId).stream()
-                .map(review -> AnimeResponseDTO.ReviewDTO.builder()
+        List<AnimeResponseDTO.RatingDTO> ratings = ratingRepository.findByAnime_AnimeId(animeId).stream()
+                .map(review -> AnimeResponseDTO.RatingDTO.builder()
                         .reviewId(review.getReviewId())
-                        .userId(review.getUser().getId().toString())
+                        .userId(review.getUser().getProviderId().toString())
                         .rating(review.getRating())
-                        .content(review.getContent())
                         .createdAt(review.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+
+        Double averageRating = calculateAverageRating(ratings);
 
         return AnimeResponseDTO.builder()
                 .animeId(anime.getAnimeId())
@@ -93,7 +79,6 @@ public class AnimeService {
                 .studio(anime.getStudio())
                 .releaseDate(anime.getReleaseDate())
                 .endDate(anime.getEndDate())
-                .episodes(anime.getEpisodes())
                 .runningTime(anime.getRunningTime())
                 .status(anime.getStatus())
                 .trailer(anime.getTrailer())
@@ -103,12 +88,13 @@ public class AnimeService {
                 .isAdult(anime.getIsAdult())
                 .duration(anime.getDuration())
                 .weekday(anime.getWeekday())
-                .anilistId(anime.getAnilistId())
-                .categories(anime.getCategories().stream()
-                        .map(Category::getCategoryName) // Category ID만 추출
+                .categories(anime.getAnimeCategories().stream()
+                        .map(animeCategory -> animeCategory.getCategory().getCategoryName())
                         .collect(Collectors.toSet()))
                 .castings(castings)
-                .reviews(reviews)
+                .ratings(ratings)
+                .episodes(null)
+                .averageRating(averageRating)
                 .build();
     }
 

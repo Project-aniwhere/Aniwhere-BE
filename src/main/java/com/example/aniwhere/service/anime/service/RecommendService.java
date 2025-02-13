@@ -1,66 +1,106 @@
 package com.example.aniwhere.service.anime.service;
 
+import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
+import com.example.aniwhere.domain.pickedAnime.PickedAnime;
+import com.example.aniwhere.domain.recommendList.RecommendListDTO;
+import com.example.aniwhere.repository.anime.repository.AnimeRepository;
 import com.example.aniwhere.repository.anime.repository.RecommendListRepository;
+import com.example.aniwhere.repository.pickedAnime.PickedAnimeRepository;
 import com.example.aniwhere.domain.anime.Anime;
-import com.example.aniwhere.domain.division.Division;
-import com.example.aniwhere.repository.division.DivisionRepository;
 import com.example.aniwhere.domain.recommendList.RecommendList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RecommendService {
     private final RecommendListRepository recommendListRepository;
-    private final DivisionRepository divisionRepository;
+    private final AnimeRecommender animeRecommender;
+    private final PickedAnimeRepository pickedAnimeRepository; // 기존 LikeRepository 대신 PickedAnimeRepository 사용
 
+    /**
+     * 모든 추천 리스트를 가져옴
+     */
+    public List<RecommendListDTO> getRecommendLists() {
+        List<RecommendList> recommendLists = recommendListRepository.findAll();
 
-    public List<RecommendList> getRecommendLists() {
-        return recommendListRepository.findAll();
+        return recommendLists.stream()
+                .map(recommendList -> RecommendListDTO.builder()
+                        .id(recommendList.getId())
+                        .title(recommendList.getTitle())
+                        .description(recommendList.getDescription())
+                        .animes(recommendList.getAnimes().stream()
+                                .map(recommendListAnime -> {
+                                    Anime anime = recommendListAnime.getAnime();
+                                    return AnimeSummaryDTO.builder()
+                                            .animeId(anime.getAnimeId())
+                                            .title(anime.getTitle())
+                                            .poster(anime.getPoster())
+                                            .build();
+                                })
+                                .collect(Collectors.toList())
+                        )
+                        .build()
+                )
+                .collect(Collectors.toList());
+
     }
 
+    /**
+     * 추천 리스트 삽입
+     */
     public RecommendList insertRecommendList(RecommendList recommendList) {
         return recommendListRepository.save(recommendList);
     }
 
+    /**
+     * 추천 리스트 삭제
+     */
     public void deleteRecommendList(long id) {
         recommendListRepository.deleteById(id);
     }
 
+    /**
+     * 추천 리스트 업데이트
+     */
     public RecommendList updateRecommendList(Long id, RecommendList recommendList) {
         recommendList.setId(id);
         return recommendListRepository.save(recommendList);
     }
 
-    @Transactional(readOnly = true)
-    public List<Anime> recommendAnimes(String gender, int age) {
-        // 1. Division 이름 결정
-        String divisionName = getDivisionName(gender, age);
+    /**
+     * 유저의 `PickedAnime` 목록을 기반으로 애니메이션 추천
+     */
+    @Cacheable(value = "recommendations", key = "#nickname")
+    public List<Anime> recommendAnimesForUser(String nickname) {
+        List<PickedAnime> pickedAnimes = pickedAnimeRepository.findByUserNickname(nickname); // PickedAnime 사용
 
-        // 2. Division 가져오기
-        Division division = divisionRepository.findByName(divisionName)
-                .orElseThrow(() -> new RuntimeException("Division not found: " + divisionName));
+        // PickedAnime 리스트에서 Anime 리스트로 변환
+        List<Anime> pickedAnimeList = pickedAnimes.stream()
+                .map(PickedAnime::getAnime) // PickedAnime에서 Anime 추출
+                .distinct() // 중복 제거
+                .collect(Collectors.toList());
 
-        // 3. 연결된 Anime 리스트 반환
-        return division.getDivisionAnimes();
+        if (pickedAnimeList.isEmpty()) {
+            throw new IllegalArgumentException("No picked animes found for user with nickname: " + nickname);
+        }
+
+        return animeRecommender.recommend(pickedAnimeList, 10); // ✅ 변환 후 전달
     }
 
-    private String getDivisionName(String gender, int age) {
-        if (age >= 10 && age < 20) {
-            return gender.equalsIgnoreCase("male") ? "Male10" : "Female10";
-        } else if (age >= 20 && age < 30) {
-            return gender.equalsIgnoreCase("male") ? "Male20" : "Female20";
-        } else if (age >= 30 && age < 40) {
-            return gender.equalsIgnoreCase("male") ? "Male30" : "Female30";
-        } else if (age >= 40) {
-            return gender.equalsIgnoreCase("male") ? "Male40" : "Female40";
-        } else {
-            throw new IllegalArgumentException("Invalid age: " + age);
-        }
+    /**
+     * 유저 추천 캐시 제거
+     */
+    @CacheEvict(value = "recommendations", key = "#nickname")
+    public void evictUserRecommendationCache(String nickname) {
+        log.info("Cleared recommendation cache for user: {}", nickname);
     }
 }
