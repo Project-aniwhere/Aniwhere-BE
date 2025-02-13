@@ -1,19 +1,19 @@
 package com.example.aniwhere.application.config.redis;
 
+import com.example.aniwhere.domain.notification.dto.NotificationDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 @Configuration
-@EnableTransactionManagement
 public class RedisConfig {
 
 	@Value("${spring.data.redis.host}")
@@ -23,34 +23,29 @@ public class RedisConfig {
 	private int port;
 
 	@Bean
-	@Primary
-	public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
-		RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-		redisTemplate.setConnectionFactory(connectionFactory);
-		redisTemplate.setEnableTransactionSupport(true);
-
-		StringRedisSerializer stringSerializer = new StringRedisSerializer();
-		redisTemplate.setKeySerializer(stringSerializer);
-		redisTemplate.setValueSerializer(stringSerializer);
-		redisTemplate.setHashKeySerializer(stringSerializer);
-		redisTemplate.setHashValueSerializer(stringSerializer);
-		redisTemplate.setDefaultSerializer(stringSerializer);
-		redisTemplate.setEnableDefaultSerializer(true);
-		redisTemplate.afterPropertiesSet();
-		return redisTemplate;
-	}
-
-	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
-		RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(host, port);
-		LettuceConnectionFactory factory = new LettuceConnectionFactory(configuration);
-		factory.setValidateConnection(true);
-		factory.afterPropertiesSet();
-		return factory;
+		return new LettuceConnectionFactory(host, port);
 	}
 
 	@Bean
-	public ValueOperations<String, String> valueOperations(RedisTemplate<String, String> redisTemplate) {
-		return redisTemplate.opsForValue();
+	public RedisOperations<String, NotificationDto> eventRedisOperations(
+			RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper
+	) {
+		Jackson2JsonRedisSerializer<NotificationDto> jsonRedisSerializer = new Jackson2JsonRedisSerializer<>(NotificationDto.class);
+		jsonRedisSerializer.setObjectMapper(objectMapper);
+		RedisTemplate<String, NotificationDto> eventRedisTemplate = new RedisTemplate<>();
+		eventRedisTemplate.setConnectionFactory(redisConnectionFactory);
+		eventRedisTemplate.setKeySerializer(RedisSerializer.string());
+		eventRedisTemplate.setValueSerializer(jsonRedisSerializer);
+		eventRedisTemplate.setHashKeySerializer(RedisSerializer.string());
+		eventRedisTemplate.setHashValueSerializer(jsonRedisSerializer);
+		return eventRedisTemplate;
+	}
+
+	@Bean
+	public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory redisConnectionFactory) {
+		RedisMessageListenerContainer redisMessageListenerContainer = new RedisMessageListenerContainer();
+		redisMessageListenerContainer.setConnectionFactory(redisConnectionFactory);
+		return redisMessageListenerContainer;
 	}
 }
