@@ -49,6 +49,8 @@ public class Anime {
     private String duration;
     private String weekday;
     private String backgroundImage;
+    private Integer scoreCnt;
+    private double totalScore;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -86,5 +88,20 @@ public class Anime {
         if (episodes.getAnime() != this) {
             episodes.registerAnime(this);
         }
+    }
+
+    public void addReview(double rating){
+        this.scoreCnt++;
+        this.totalScore+=rating;
+    }
+
+    public void updateReview(Double oldRating, double newRating) {
+        this.totalScore-=oldRating;
+        this.totalScore+=newRating;
+    }
+
+    public void deleteAnimeReview(Double rating) {
+        this.scoreCnt++;
+        this.totalScore-=rating;
     }
 }
