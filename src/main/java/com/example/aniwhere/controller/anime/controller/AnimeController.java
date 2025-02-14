@@ -42,12 +42,9 @@ public class AnimeController {
         if (quarter < 1 || quarter > 4) {
             throw new InvalidInputException("분기는 1 이상, 4 이하여야 합니다.", ErrorCode.INVALID_INPUT_VALUE);
         }
+        Map<String, List<QuarterAnimeResponseDTO>> animeGroupedByWeekday = animeService.getAnimeByYearAndQuarter(year, quarter);
 
-
-    @GetMapping("/anime/{id}")
-    public ResponseEntity<AnimeResponseDTO> getAnimeById(@PathVariable int id) {
-        AnimeResponseDTO animeResponse = animeService.getAnimeById(id);
-        return ResponseEntity.ok(animeResponse);
+        return ResponseEntity.ok(animeGroupedByWeekday);
     }
 
     /**
