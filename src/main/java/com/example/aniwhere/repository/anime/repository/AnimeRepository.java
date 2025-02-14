@@ -16,4 +16,7 @@ public interface  AnimeRepository extends JpaRepository<Anime, Long>, AnimeCusto
 
     @Query("SELECT a FROM Anime a LEFT JOIN FETCH a.episodesList WHERE a.animeId = :id")
     Optional<Anime> findByIdWithEpisodes(@Param("id") Long id);
+
+    @Query("SELECT a FROM Anime a WHERE YEAR(a.releaseDate) = :year AND a.airingQuarter = :quarter")
+    List<Anime> findByYearAndQuarter(@Param("year") int year, @Param("quarter") int quarter);
 }
