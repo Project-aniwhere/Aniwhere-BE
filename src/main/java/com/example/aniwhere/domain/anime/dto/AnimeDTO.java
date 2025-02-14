@@ -17,6 +17,17 @@ import java.util.Set;
 
 public class AnimeDTO {
 
+
+    @Getter
+    @Setter
+    @Builder
+    public static class QuarterAnimeResponseDTO {
+        private Long animeId;
+        private String title;
+        private String poster;
+        private String weekday;
+    }
+
     @Getter
     @Setter
     @Builder
