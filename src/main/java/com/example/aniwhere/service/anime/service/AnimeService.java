@@ -42,6 +42,16 @@ public class AnimeService {
 
         return totalRating / reviews.size();
     }
+
+    private QuarterAnimeResponseDTO convertToDTO(Anime anime) {
+        return QuarterAnimeResponseDTO.builder()
+                .animeId(anime.getAnimeId())
+                .title(anime.getTitle())
+                .poster(anime.getPoster())
+                .weekday(anime.getWeekday())
+                .build();
+    }
+    
     @Transactional(readOnly = true)
     public AnimeResponseDTO getAnimeById(long animeId) {
         Anime anime = animeRepository.findById(animeId)
