@@ -44,7 +44,7 @@ public class AnimeDTO {
         private String weekday;
         private List<RatingDTO> ratings;
         private String backgroundImage;
-        private Set<String> categories; //장르
+        private Set<String> categories;
 
         private List<CastingDTO> castings;  // 등장인물 정보 목록
 
