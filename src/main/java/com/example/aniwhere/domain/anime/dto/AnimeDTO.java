@@ -17,6 +17,17 @@ import java.util.Set;
 
 public class AnimeDTO {
 
+
+    @Getter
+    @Setter
+    @Builder
+    public static class QuarterAnimeResponseDTO {
+        private Long animeId;
+        private String title;
+        private String poster;
+        private String weekday;
+    }
+
     @Getter
     @Setter
     @Builder
@@ -44,7 +55,7 @@ public class AnimeDTO {
         private String weekday;
         private List<RatingDTO> ratings;
         private String backgroundImage;
-        private Set<String> categories; //장르
+        private Set<String> categories;
 
         private List<CastingDTO> castings;  // 등장인물 정보 목록
 

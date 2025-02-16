@@ -5,14 +5,12 @@ import com.example.aniwhere.domain.history.dto.HistoryUserDto;
 import com.example.aniwhere.domain.history.dto.RequestHistoryResponseDto;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
-import com.example.aniwhere.repository.history.HistoryRepository;
 import com.example.aniwhere.repository.user.UserRepository;
+import com.example.aniwhere.service.notification.event.UserRequestEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.example.aniwhere.domain.user.Role.ROLE_ADMIN;
 import static com.example.aniwhere.global.error.ErrorCode.*;
@@ -23,21 +21,19 @@ import static com.example.aniwhere.global.error.ErrorCode.*;
 public class HistoryService {
 
 	private final UserRepository userRepository;
-	private final HistoryRepository historyRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public List<RequestHistoryResponseDto> requestAnimeToAdmin(Long userId, HistoryUserDto request) {
+	public RequestHistoryResponseDto requestAnime(Long userId, HistoryUserDto request) {
 
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-		List<User> admin = userRepository.findAllByRole(ROLE_ADMIN);
-		List<History> histories = request.toEntity(user, admin);
+		User admin = userRepository.findAllByRole(ROLE_ADMIN);
+		History history = request.toEntity(user, admin);
 
-		return historyRepository.saveAll(histories)
-				.stream()
-				.map(RequestHistoryResponseDto::from)
-				.collect(Collectors.toList());
+		eventPublisher.publishEvent(new UserRequestEvent(user, admin, request.content()));
+		return RequestHistoryResponseDto.from(history);
 	}
 
 }

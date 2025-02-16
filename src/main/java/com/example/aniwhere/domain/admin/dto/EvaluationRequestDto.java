@@ -1,4 +1,4 @@
 package com.example.aniwhere.domain.admin.dto;
 
-public record EvaluationRequestDto(Status status, String message) {
+public record EvaluationRequestDto(Long historyId, Long userId, Status status, String message) {
 }
