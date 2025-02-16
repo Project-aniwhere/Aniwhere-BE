@@ -80,10 +80,4 @@ public class AdminApiController {
 				.body(result);
 	}
 
-	@PostMapping
-	public ResponseEntity<Void> createAnime(@Valid @RequestBody AnimeDTO.AnimeResponseDTO animeDTO) {
-		animeService.createAnime(animeDTO);
-		return ResponseEntity.ok().build(); // 200 OK 반환
-	}
-
 }
