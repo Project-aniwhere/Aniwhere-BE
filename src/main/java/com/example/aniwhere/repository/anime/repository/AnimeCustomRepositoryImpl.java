@@ -120,6 +120,7 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
                 .leftJoin(QAnime.anime.keywords, QAnimeKeyword.animeKeyword) // ✅ 키워드 테이블 조인
                 .where(
                         categoryIn(categories),
+                        yearFilter(year),
                         quarterIn(quarters, year), // ✅ 방영중인 경우 해당 분기 포함 여부 검사
                         titleLike(title),
                         statusIn(statuses)
@@ -133,6 +134,7 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
                 .leftJoin(QAnime.anime.keywords, QAnimeKeyword.animeKeyword)
                 .where(
                         categoryIn(categories),
+                        yearFilter(year),
                         quarterIn(quarters, year),
                         titleLike(title),
                         statusIn(statuses)
@@ -199,6 +201,13 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
     private LocalDate getQuarterEnd(int year, int quarter) {
         int endMonth = quarter * 3;
         return LocalDate.of(year, endMonth, endMonth == 2 ? 28 : 30);
+    }
+
+    private BooleanExpression yearFilter(Integer year) {
+        if (year == null) return null; // 연도 필터가 없을 경우 무시
+
+        return anime.releaseDate.year().loe(year) // ✅ 출시 연도가 year 이하
+                .and(anime.endDate.isNull().or(anime.endDate.year().goe(year))); // ✅ 종료 연도가 year 이상이거나 NULL
     }
 
 }
