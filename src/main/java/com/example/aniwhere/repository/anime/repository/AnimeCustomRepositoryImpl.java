@@ -48,17 +48,17 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
 
         // 요일-숫자 매핑
         Map<String, Integer> weekdayToCode = Map.of(
+                "일요일", 0,
                 "월요일", 1,
                 "화요일", 2,
                 "수요일", 3,
                 "목요일", 4,
                 "금요일", 5,
-                "토요일", 6,
-                "일요일", 7
+                "토요일", 6
         );
 
         // 요일순서
-        List<String> weekdayOrder = Arrays.asList("월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일");
+        List<String> weekdayOrder = Arrays.asList("일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일");
 
         Map<String, List<Anime>> groupedByWeekday = filteredAnimes.stream()
                 .collect(Collectors.groupingBy(
