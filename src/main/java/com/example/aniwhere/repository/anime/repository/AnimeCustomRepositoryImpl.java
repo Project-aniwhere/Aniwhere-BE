@@ -2,6 +2,7 @@ package com.example.aniwhere.repository.anime.repository;
 import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.QAnime;
+import com.example.aniwhere.domain.anime.QAnimeKeyword;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO;
 import com.example.aniwhere.domain.anime.dto.AnimeSearchResponseDto;
 import com.example.aniwhere.domain.anime.dto.QAnimeSearchResponseDto;
@@ -116,6 +117,7 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
                         convertStatus(anime.status) // 변경된 정책 반영
                 ))
                 .from(anime)
+                .leftJoin(QAnime.anime.keywords, QAnimeKeyword.animeKeyword) // ✅ 키워드 테이블 조인
                 .where(
                         categoryIn(categories),
                         quarterIn(quarters, year), // ✅ 방영중인 경우 해당 분기 포함 여부 검사
@@ -128,6 +130,7 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
 
         JPAQuery<Anime> countQuery = queryFactory
                 .selectFrom(anime)
+                .leftJoin(QAnime.anime.keywords, QAnimeKeyword.animeKeyword)
                 .where(
                         categoryIn(categories),
                         quarterIn(quarters, year),
@@ -141,12 +144,14 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
     }
 
     // ✅ LIKE 검색 적용 (대소문자 구분 없이 부분 검색)
-    private BooleanExpression titleLike(String title) {
-        if (title != null && !title.trim().isEmpty()) {
-            return QAnime.anime.title.likeIgnoreCase("%" + title.trim() + "%");
+    private BooleanExpression titleLike(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return QAnime.anime.title.likeIgnoreCase("%" + keyword.trim() + "%")
+                    .or(QAnime.anime.keywords.any().keyword.likeIgnoreCase("%" + keyword.trim() + "%")); //키워드 추가
         }
         return null;
     }
+
 
     // ✅ 카테고리 필터 적용
     private BooleanExpression categoryIn(List<String> categories) {
