@@ -1,6 +1,8 @@
 package com.example.aniwhere.repository.anime.repository;
 
 import com.example.aniwhere.domain.anime.Anime;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +21,5 @@ public interface  AnimeRepository extends JpaRepository<Anime, Long>, AnimeCusto
 
     @Query("SELECT a FROM Anime a WHERE YEAR(a.releaseDate) = :year AND a.airingQuarter = :quarter")
     List<Anime> findByYearAndQuarter(@Param("year") int year, @Param("quarter") int quarter);
+
 }
