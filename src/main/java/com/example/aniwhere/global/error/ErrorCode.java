@@ -34,6 +34,10 @@ public enum ErrorCode {
 	// anime
 	NOT_FOUND_ANIME(404, "A001", "애니메이션을 찾을 수 없습니다."),
 
+	// anime review
+	NOT_FOUND_ANIME_REVIEW(404, "AR001", "애니메이션 리뷰를 찾을 수 없습니다."),
+	ANIME_REVIEW_NOT_BELONGS_TO_ANIME(404, "AR002", "해당 애니메이션에 속하지 않는 리뷰입니다."),
+
 	// picked anime
 	NOT_FOUND_PICKED_ANIME(404, "PA001", "찜한 애니메이션을 찾을 수 없습니다."),
 

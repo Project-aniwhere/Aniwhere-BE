@@ -1,5 +1,6 @@
 package com.example.aniwhere.domain.user;
 
+import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.episodeReviews.EpisodeReviews;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
 import com.example.aniwhere.global.common.Common;
@@ -57,7 +58,8 @@ public class User extends Common {
 	private List<EpisodeReviews> episodeReviews = new ArrayList<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<EpisodeReviews> animeReviews = new ArrayList<>();
+	private List<AnimeReview> animeReviews = new ArrayList<>();
+
 
 	// 정보 업데이트
 	public User updateUser(User user) {

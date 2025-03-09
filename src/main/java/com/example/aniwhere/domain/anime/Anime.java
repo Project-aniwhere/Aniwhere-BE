@@ -1,5 +1,6 @@
 package com.example.aniwhere.domain.anime;
 
+import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.casting.Casting;
 import com.example.aniwhere.domain.category.AnimeCategory;
 import com.example.aniwhere.domain.category.Category;
@@ -48,6 +49,8 @@ public class Anime {
     private String duration;
     private String weekday;
     private String backgroundImage;
+    private Integer scoreCnt;
+    private double totalScore;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -71,6 +74,8 @@ public class Anime {
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Rating> ratings = new ArrayList<>();
 
+    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnimeReview> reviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AnimeCategory> animeCategories = new HashSet<>();
@@ -86,5 +91,20 @@ public class Anime {
         if (episodes.getAnime() != this) {
             episodes.registerAnime(this);
         }
+    }
+
+    public void addReview(double rating){
+        this.scoreCnt++;
+        this.totalScore+=rating;
+    }
+
+    public void updateReview(Double oldRating, double newRating) {
+        this.totalScore-=oldRating;
+        this.totalScore+=newRating;
+    }
+
+    public void deleteAnimeReview(Double rating) {
+        this.scoreCnt++;
+        this.totalScore-=rating;
     }
 }

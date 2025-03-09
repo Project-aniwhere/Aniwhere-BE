@@ -22,6 +22,8 @@ import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.aniwhere.global.error.ErrorCode.*;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +31,8 @@ public class AnimeService {
     private final AnimeRepository animeRepository;
     private final CastingRepository castingRepository;
     private final RatingRepository ratingRepository;
+    private final AnimeReviewRepository animeReviewRepository;
+    private final UserRepository userRepository;
 
 
     public Double calculateAverageRating(List<AnimeResponseDTO.RatingDTO> reviews) {
@@ -139,6 +143,82 @@ public class AnimeService {
                 .forEach(anime -> groupedAnimes.get(anime.getWeekday()).add(anime));
 
         return groupedAnimes;
+    }
+
+    public PageResponse<AnimeReviewResponse> getAnimeReviews(Long animeId, PageRequest request) {
+        return animeReviewRepository.getAnimeReviews(animeId, request);
+    }
+    @Transactional
+    public void addAnimeReview(Long animeId, Long userId, AnimeReviewRequest request) {
+        Anime anime = animeRepository.findById(animeId).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.NOT_FOUND_ANIME));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_USER));
+
+        chkAlreadyExistReview(anime, user);
+
+        anime.addReview(request.rating());
+
+        AnimeReview animeReview = AnimeReview.builder()
+                .anime(anime)
+                .user(user)
+                .rating(request.rating())
+                .content(request.content())
+                .build();
+
+        animeReviewRepository.save(animeReview);
+    }
+
+    @Transactional
+    public void updateAnimeReview(Long animeId,Long animeReviewId, AnimeReviewRequest request, Long userId) {
+        Anime anime = animeRepository.findById(animeId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.NOT_FOUND_ANIME));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_USER));
+
+        AnimeReview animeReview = animeReviewRepository.findById(animeReviewId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ANIME_REVIEW));
+
+        chkSameUser(user, animeReview);
+
+        anime.updateReview(animeReview.getRating(), request.rating());
+        animeReview.updateRatingAndContent(request.rating(), request.content());
+    }
+
+    public void deleteAnimeReview(Long animeId, Long animeReviewId, Long userId) {
+        Anime anime = animeRepository.findById(animeId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.NOT_FOUND_ANIME));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_USER));
+
+        AnimeReview animeReview = animeReviewRepository.findById(animeReviewId)
+                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_ANIME_REVIEW));
+
+        chkSameUser(user, animeReview);
+        chkSameAnime(anime, animeReview);
+
+        anime.deleteAnimeReview(animeReview.getRating());
+        animeReviewRepository.delete(animeReview);
+    }
+
+    private void chkAlreadyExistReview(Anime anime, User user) {
+        if (animeReviewRepository.existsByAnimeAndUser(anime, user)){
+            throw new UserException(ALREADY_EXIST_EPISODE_REVIEW);
+        }
+    }
+
+    private void chkSameUser(User user, AnimeReview animeReview) {
+        if (!user.getId().equals(animeReview.getUser().getId())) {
+            throw new ResourceNotFoundException(UNAUTHORIZED);
+        }
+    }
+
+    private void chkSameAnime(Anime anime, AnimeReview animeReview) {
+        if (!anime.getAnimeId().equals(animeReview.getAnime().getAnimeId())) {
+            throw new ResourceNotFoundException(ANIME_REVIEW_NOT_BELONGS_TO_ANIME);
+        }
     }
 }
 

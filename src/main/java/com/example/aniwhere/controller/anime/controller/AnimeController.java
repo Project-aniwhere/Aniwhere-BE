@@ -78,4 +78,63 @@ public class AnimeController {
                 .build();
     }
 
+    @Operation(
+            summary = "애니메이션 리뷰 조회",
+            description = "특정 애니메이션의 리뷰를 조회합니다."
+    )
+    @GetMapping("/anime/{animeId}/reviews")
+    public ResponseEntity<PageResponse<AnimeReviewResponse>> getAnimeReviews(@PathVariable(name = "animeId") final Long episodeId,
+                                                                             PageRequest request){
+        PageResponse<AnimeReviewResponse> animeReviews = animeService.getAnimeReviews(episodeId, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(animeReviews);
+    }
+
+    @Operation(
+            summary = "애니메이션 리뷰 작성",
+            description = "특정 애니메이션의 리뷰를 작성합니다."
+    )
+    @GetMapping("/anime/{animeId}/reviews")
+    public ResponseEntity<Void> addAnimeReviews(@PathVariable(name = "animeId") final Long animeId,
+                                                @Valid @RequestBody final AnimeReviewRequest request,
+                                                @LoginUser final Long userId){
+        animeService.addAnimeReview(animeId, userId, request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
+
+    @Operation(
+            summary = "애니메이션 리뷰 수정",
+            description = "특정 애니메이션의 리뷰를 작성합니다."
+    )
+    @PutMapping("/anime/{animeId}/reviews/{animeReviewId}")
+    public ResponseEntity<Void> updateAnimeReview(@PathVariable(name = "animeId") Long animeId,
+                                                  @PathVariable(name="animeReviewId") Long animeReviewId,
+                                                  @Valid @RequestBody final AnimeReviewRequest request,
+                                                  @LoginUser final Long userId
+
+    ){
+        animeService.updateAnimeReview(animeId,animeReviewId, request, userId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
+
+    @Operation(
+            summary = "애니메이션 리뷰 삭제",
+            description = "특정 애니메이션의 리뷰를 삭제합니다."
+    )
+    @PutMapping("/anime/{animeId}/reviews/{animeReviewId}")
+    public ResponseEntity<Void> deleteAnimeReview(@PathVariable(name = "animeId") Long animeId,
+                                                  @PathVariable(name="animeReviewId") Long animeReviewId,
+                                                  @LoginUser final Long userId){
+        animeService.deleteAnimeReview(animeId, animeReviewId, userId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
 }
