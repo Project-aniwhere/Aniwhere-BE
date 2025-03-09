@@ -1,6 +1,7 @@
 package com.example.aniwhere.domain.anime.dto;
 
 
+import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +17,8 @@ import java.util.Set;
 
 
 public class AnimeDTO {
+
+
 
 
     @Getter
@@ -62,6 +65,8 @@ public class AnimeDTO {
         private List<EpisodeDTO> episodes;
 
         private Double averageRating;
+
+        private List<AnimeReviewResponse> reviews;
 
         @Getter
         @Setter

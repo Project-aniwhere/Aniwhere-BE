@@ -1,5 +1,13 @@
 package com.example.aniwhere.service.anime.service;
 
+import com.example.aniwhere.application.config.page.PageRequest;
+import com.example.aniwhere.application.config.page.PageResponse;
+import com.example.aniwhere.domain.animeReview.AnimeReview;
+import com.example.aniwhere.domain.animeReview.dto.AnimeReviewRequest;
+import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
+import com.example.aniwhere.domain.user.User;
+import com.example.aniwhere.global.error.exception.UserException;
+import com.example.aniwhere.repository.animeReview.AnimeReviewRepository;
 import com.example.aniwhere.repository.casting.repository.CastingRepository;
 import com.example.aniwhere.repository.rating.repository.RatingRepository;
 import com.example.aniwhere.domain.anime.Anime;
@@ -9,9 +17,11 @@ import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
 
+import com.example.aniwhere.repository.user.UserRepository;
 import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,7 +65,7 @@ public class AnimeService {
                 .weekday(anime.getWeekday())
                 .build();
     }
-    
+
     @Transactional(readOnly = true)
     public AnimeResponseDTO getAnimeById(long animeId) {
         Anime anime = animeRepository.findById(animeId)
@@ -66,7 +76,7 @@ public class AnimeService {
                         .castingId(casting.getCastingId())
                         .characterName(casting.getCharacterName())
                         .characterDescription(casting.getCharacterDescription())
-                        .voiceActorName(casting.getVoiceActor().getName()) // 성우 이름을 포함한 캐스팅 정보
+                        .voiceActorName(casting.getVoiceActor().getName())
                         .build())
                 .collect(Collectors.toList());
 
@@ -80,6 +90,15 @@ public class AnimeService {
                 .collect(Collectors.toList());
 
         Double averageRating = calculateAverageRating(ratings);
+
+        // 페이지 요청 시 리뷰 3개만 조회하도록 설정
+        PageRequest pageRequest = new PageRequest();
+        pageRequest.setPage(1);  // 1페이지 (내부적으로 0 기반 인덱스로 변환)
+        pageRequest.setSize(3);  // 3개만 조회
+        pageRequest.setDirection(Sort.Direction.DESC);  // 최신순 정렬
+
+        PageResponse<AnimeReviewResponse> reviewPage = animeReviewRepository.getAnimeReviews(animeId, pageRequest);
+        List<AnimeReviewResponse> reviews = reviewPage.getContent();
 
         return AnimeResponseDTO.builder()
                 .animeId(anime.getAnimeId())
@@ -109,6 +128,7 @@ public class AnimeService {
                 .ratings(ratings)
                 .episodes(null)
                 .averageRating(averageRating)
+                .reviews(reviews)
                 .build();
     }
 
