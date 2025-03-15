@@ -42,6 +42,8 @@ public class Anime {
     private String runningTime;
     private String status;
     private String trailer;
+    @Column(name = "episodes")
+    private Integer episodeCount;
     private String description;
     private String poster;
     private Integer airingQuarter;
