@@ -33,7 +33,8 @@ public class AnimeReviewRepositoryImpl implements AnimeReviewRepositoryCustom {
                         animeReview.id,
                         animeReview.rating,
                         animeReview.content,
-                        animeReview.user.nickname
+                        animeReview.user.nickname,
+                        animeReview.user.id
                 ))
                 .from(animeReview)
                 .where(animeReview.anime.animeId.eq(animeId))
