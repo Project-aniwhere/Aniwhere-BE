@@ -1,7 +1,10 @@
 package com.example.aniwhere.domain.anime.dto;
 
 
+import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
+import com.example.aniwhere.domain.episodes.Episodes;
+import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -61,8 +64,6 @@ public class AnimeDTO {
         private Set<String> categories;
 
         private List<CastingDTO> castings;  // 등장인물 정보 목록
-
-        private List<EpisodeDTO> episodes;
 
         private Double averageRating;
 
