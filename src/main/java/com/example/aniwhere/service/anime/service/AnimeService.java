@@ -5,10 +5,12 @@ import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewRequest;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
+import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.animeReview.AnimeReviewRepository;
 import com.example.aniwhere.repository.casting.repository.CastingRepository;
+import com.example.aniwhere.repository.episodes.EpisodesRepository;
 import com.example.aniwhere.repository.rating.repository.RatingRepository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
@@ -43,6 +45,7 @@ public class AnimeService {
     private final RatingRepository ratingRepository;
     private final AnimeReviewRepository animeReviewRepository;
     private final UserRepository userRepository;
+    private final EpisodesRepository episodesRepository;
 
 
     public Double calculateAverageRating(List<AnimeResponseDTO.RatingDTO> reviews) {
@@ -100,6 +103,13 @@ public class AnimeService {
         PageResponse<AnimeReviewResponse> reviewPage = animeReviewRepository.getAnimeReviews(animeId, pageRequest);
         List<AnimeReviewResponse> reviews = reviewPage.getContent();
 
+        PageRequest episodePage = new PageRequest();
+        episodePage.setPage(1);
+        episodePage.setSize(40);
+        episodePage.setDirection(Sort.Direction.DESC);
+
+        PageResponse<EpisodesDto> episodes = episodesRepository.getEpisodes(animeId, episodePage);
+
         return AnimeResponseDTO.builder()
                 .animeId(anime.getAnimeId())
                 .title(anime.getTitle())
@@ -112,6 +122,7 @@ public class AnimeService {
                 .studio(anime.getStudio())
                 .releaseDate(anime.getReleaseDate())
                 .endDate(anime.getEndDate())
+                .episodeNum(episodes.getContent().size())
                 .runningTime(anime.getRunningTime())
                 .status(anime.getStatus())
                 .trailer(anime.getTrailer())
@@ -126,7 +137,6 @@ public class AnimeService {
                         .collect(Collectors.toSet()))
                 .castings(castings)
                 .ratings(ratings)
-                .episodes(null)
                 .averageRating(averageRating)
                 .reviews(reviews)
                 .build();
