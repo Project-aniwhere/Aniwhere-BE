@@ -49,7 +49,7 @@ public class AnimeDTO {
         private String studio;
         private LocalDate releaseDate;
         private LocalDate endDate;
-        private Integer episodeNum;
+        private Integer episodes;
         private String runningTime;
         private String status;
         private String trailer;
