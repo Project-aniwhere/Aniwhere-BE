@@ -18,6 +18,7 @@ import static jakarta.persistence.FetchType.LAZY;
 public class Rating extends Common {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "rating_id")
     private Long reviewId;
 
     @ManyToOne(fetch = LAZY)
