@@ -49,7 +49,6 @@ public class AnimeDTO {
         private String studio;
         private LocalDate releaseDate;
         private LocalDate endDate;
-        private Integer episodes;
         private String runningTime;
         private String status;
         private String trailer;
@@ -68,6 +67,8 @@ public class AnimeDTO {
         private Double averageRating;
 
         private List<AnimeReviewResponse> reviews;
+
+        private List<EpisodesDto> episodes;
 
         @Getter
         @Setter
