@@ -122,7 +122,7 @@ public class AnimeService {
                 .studio(anime.getStudio())
                 .releaseDate(anime.getReleaseDate())
                 .endDate(anime.getEndDate())
-                .episodeNum(anime.getEpisodeCount())
+                .episodes(anime.getEpisodeCount())
                 .runningTime(anime.getRunningTime())
                 .status(anime.getStatus())
                 .trailer(anime.getTrailer())
