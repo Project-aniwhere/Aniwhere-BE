@@ -7,6 +7,7 @@ import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewRequest;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
+import com.example.aniwhere.domain.animeReview.dto.ReviewJsonResponse;
 import com.example.aniwhere.domain.history.dto.HistoryUserDto;
 import com.example.aniwhere.domain.anime.dto.AnimeQuarterDTO;
 import com.example.aniwhere.service.anime.service.AnimeService;
@@ -83,22 +84,22 @@ public class AnimeController {
             description = "특정 애니메이션의 리뷰를 작성합니다."
     )
     @PutMapping("/anime/{animeId}/reviews")
-    public ResponseEntity<Void> addAnimeReviews(@PathVariable(name = "animeId") final Long animeId,
-                                                @Valid @RequestBody final AnimeReviewRequest request,
-                                                @LoginUser final Long userId){
+    public ResponseEntity<ReviewJsonResponse> addAnimeReviews(@PathVariable(name = "animeId") final Long animeId,
+                                                              @Valid @RequestBody final AnimeReviewRequest request,
+                                                              final Long userId){
         animeService.addAnimeReview(animeId, userId, request);
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
+                .status(HttpStatus.OK)
+                .body(new ReviewJsonResponse(200, "성공"));
     }
 
     @Operation(
             summary = "애니메이션 리뷰 수정",
-            description = "특정 애니메이션의 리뷰를 작성합니다."
+            description = "특정 애니메이션의 리뷰를 수정합니다."
     )
     @PatchMapping("/anime/{animeId}/reviews/{animeReviewId}")
-    public ResponseEntity<Void> updateAnimeReview(@PathVariable(name = "animeId") Long animeId,
+    public ResponseEntity<ReviewJsonResponse> updateAnimeReview(@PathVariable(name = "animeId") Long animeId,
                                                   @PathVariable(name="animeReviewId") Long animeReviewId,
                                                   @Valid @RequestBody final AnimeReviewRequest request,
                                                   @LoginUser final Long userId
@@ -107,7 +108,7 @@ public class AnimeController {
         animeService.updateAnimeReview(animeId,animeReviewId, request, userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .build();
+                .body(new ReviewJsonResponse(200, "성공"));
     }
 
     @Operation(
@@ -115,13 +116,13 @@ public class AnimeController {
             description = "특정 애니메이션의 리뷰를 삭제합니다."
     )
     @DeleteMapping("/anime/{animeId}/reviews/{animeReviewId}")
-    public ResponseEntity<Void> deleteAnimeReview(@PathVariable(name = "animeId") Long animeId,
+    public ResponseEntity<ReviewJsonResponse> deleteAnimeReview(@PathVariable(name = "animeId") Long animeId,
                                                   @PathVariable(name="animeReviewId") Long animeReviewId,
                                                   @LoginUser final Long userId){
         animeService.deleteAnimeReview(animeId, animeReviewId, userId);
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .build();
+                .status(HttpStatus.OK)
+                .body(new ReviewJsonResponse(200, "성공"));
     }
 
     @Operation(

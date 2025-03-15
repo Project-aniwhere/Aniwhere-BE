@@ -31,6 +31,7 @@ public class AnimeReviewRepositoryImpl implements AnimeReviewRepositoryCustom {
         List<AnimeReviewResponse> reviews = queryFactory
                 .select(new QAnimeReviewResponse(
                         animeReview.id,
+                        animeReview.anime.animeId,
                         animeReview.rating,
                         animeReview.content,
                         animeReview.user.nickname,
