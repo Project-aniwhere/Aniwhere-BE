@@ -114,7 +114,8 @@ public class AnimeCustomRepositoryImpl implements AnimeCustomRepository{
                 .select(new QAnimeSearchResponseDto(
                         anime.animeId,
                         anime.title,
-                        convertStatus(anime.status) // 변경된 정책 반영
+                        convertStatus(anime.status),
+                        anime.poster
                 ))
                 .from(anime)
                 .leftJoin(QAnime.anime.keywords, QAnimeKeyword.animeKeyword) // ✅ 키워드 테이블 조인
