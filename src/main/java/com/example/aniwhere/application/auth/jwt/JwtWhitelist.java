@@ -38,6 +38,9 @@ public class JwtWhitelist {
 		entries.add(new WhitelistEntry("/api/auth/email/verifications-requests", HttpMethod.POST));
 		entries.add(new WhitelistEntry("/api/auth/email/verifications", HttpMethod.POST));
 
+		// 토큰 관련 경로
+		entries.add(new WhitelistEntry("/api/reissue", HttpMethod.POST));
+
 		// 카카오 인증 관련 경로들 수정
 		entries.add(new WhitelistEntry("/api/auth/kakao/callback", HttpMethod.POST));
 		entries.add(new WhitelistEntry("/oauth/authorize", HttpMethod.GET));
