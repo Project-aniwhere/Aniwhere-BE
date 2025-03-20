@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/recommend")
+@RequestMapping("/api")
 public class AnimeRecommendController {
 
     private final RecommendService recommendService;
@@ -82,5 +82,15 @@ public class AnimeRecommendController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    @Operation(
+            summary = "인기 애니메이션 추천",
+            description = "이번 분기 인기 애니메이션 리스트를 반환합니다"
+    )
+    @GetMapping("/trend")
+    public ResponseEntity<List<AnimeSummaryDTO>> getPopularAnime() {
+        List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(20);
+        return ResponseEntity.ok(popularAnime);
     }
 }
