@@ -85,6 +85,9 @@ public class Anime {
     @OneToMany(mappedBy = "anime")
     private final List<Episodes> episodesList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnimeKeyword> keywords = new ArrayList<>();
+
     public void addEpisodes(Episodes episodes) {
         this.episodesList.add(episodes);
         if (episodes.getAnime() != this) {

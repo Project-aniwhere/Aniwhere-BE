@@ -6,6 +6,7 @@ import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewRequest;
 import com.example.aniwhere.domain.episodeReviews.dto.EpisodeReviewResponse;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
+import com.example.aniwhere.domain.episodes.dto.EpisodesInfoDto;
 import com.example.aniwhere.repository.episodes.EpisodesRepository;
 import com.example.aniwhere.repository.episodesReview.EpisodesReviewRepository;
 import com.example.aniwhere.service.episodes.dto.EpisodeReviewCommand;
@@ -18,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -38,6 +41,19 @@ public class EpisodeApiController {
 	public ResponseEntity<PageResponse<EpisodesDto>> getEpisodes(@PathVariable(name = "animeId") Long animeId, PageRequest request) {
 
 		PageResponse<EpisodesDto> episodes = episodesRepository.getEpisodes(animeId, request);
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(episodes);
+	}
+
+	@Operation(
+			summary = "에피소드 상세 조회",
+			description = "에피소드 상세 정보들을 조회합니다."
+	)
+	@GetMapping("/episodes/{episodeId}")
+    public ResponseEntity<List<EpisodesInfoDto>> getEpisode(@PathVariable(name = "episodeId") Long episodeId) {
+
+		List<EpisodesInfoDto> episodes = episodesRepository.getEpisodeById(episodeId);
 		return ResponseEntity
 				.status(HttpStatus.OK)
 				.body(episodes);
