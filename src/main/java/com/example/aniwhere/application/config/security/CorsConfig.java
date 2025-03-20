@@ -11,14 +11,12 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-	private static final String FRONT_END_LOCAL = "http://localhost:3000";
-
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration corsConfiguration = new CorsConfiguration();
 
 		corsConfiguration.setAllowCredentials(true);
-		corsConfiguration.setAllowedOrigins(List.of(FRONT_END_LOCAL));
+		corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000", "http://aniwhere.duckdns.org", "http://aniwhere.vercel.app"));
 		corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 		corsConfiguration.setAllowedHeaders(List.of("*"));
 		corsConfiguration.setExposedHeaders(List.of("Set-Cookie", "*"));

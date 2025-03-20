@@ -50,6 +50,7 @@ public class SecurityConfig {
 								new AntPathRequestMatcher("/api/auth/kakao/login"),
 								new AntPathRequestMatcher("/login/**"),
 								new AntPathRequestMatcher("/api/login"),
+								new AntPathRequestMatcher("/api/reissue"),
 								new AntPathRequestMatcher("/api/token"),
 								new AntPathRequestMatcher("/api/auth/**"),
 								new AntPathRequestMatcher("/api/anime/**"),
