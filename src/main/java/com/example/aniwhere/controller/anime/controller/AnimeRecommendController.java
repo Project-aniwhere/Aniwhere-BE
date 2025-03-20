@@ -6,6 +6,7 @@ import com.example.aniwhere.domain.recommendList.RecommendListDTO;
 import com.example.aniwhere.service.anime.service.RecommendService;
 import com.example.aniwhere.domain.recommendList.RecommendList;
 import com.example.aniwhere.service.division.DivisionService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,12 +24,20 @@ public class AnimeRecommendController {
     private final RecommendService recommendService;
     private final DivisionService divisionService;
 
+    @Operation(
+            summary = "애니메이션 추천 리스트",
+            description = "개인화없는 추천 리스트를 반환합니다."
+    )
     @GetMapping
     public ResponseEntity<List<RecommendListDTO>> getAnimeRecommendList() {
         List<RecommendListDTO> lists = recommendService.getRecommendLists();
         return ResponseEntity.ok(lists);
     }
 
+    @Operation(
+            summary = "그룹별 애니메이션 추천",
+            description = "사용자의 연령대와 성별에 맞춰 애니메이션 리스트를 추천합니다."
+    )
     @GetMapping("/division/{nickname}")
     public ResponseEntity<List<AnimeSummaryDTO>> getAnimeRecommendByDivision(@PathVariable String nickname) {
         List<AnimeSummaryDTO> list = divisionService.recommendAnimes(nickname);

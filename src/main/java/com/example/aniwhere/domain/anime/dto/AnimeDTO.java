@@ -5,6 +5,7 @@ import com.example.aniwhere.application.config.page.PageResponse;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
 import com.example.aniwhere.domain.episodes.Episodes;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -47,7 +48,9 @@ public class AnimeDTO {
         private String script;
         private String producer;
         private String studio;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate releaseDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate endDate;
         private String runningTime;
         private String status;
