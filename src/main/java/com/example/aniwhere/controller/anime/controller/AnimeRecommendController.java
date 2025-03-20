@@ -13,12 +13,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/recommend")
+@RequestMapping("/api")
 public class AnimeRecommendController {
 
     private final RecommendService recommendService;
@@ -26,39 +28,38 @@ public class AnimeRecommendController {
 
     @Operation(
             summary = "애니메이션 추천 리스트",
-            description = "개인화없는 추천 리스트를 반환합니다."
+            description = "로그인 여부에 따라 개인화된 추천 리스트 또는 일반 추천 리스트를 반환합니다."
     )
-    @GetMapping
-    public ResponseEntity<List<RecommendListDTO>> getAnimeRecommendList() {
-        List<RecommendListDTO> lists = recommendService.getRecommendLists();
-        return ResponseEntity.ok(lists);
-    }
-
-    @Operation(
-            summary = "그룹별 애니메이션 추천",
-            description = "사용자의 연령대와 성별에 맞춰 애니메이션 리스트를 추천합니다."
-    )
-    @GetMapping("/division/{nickname}")
-    public ResponseEntity<List<AnimeSummaryDTO>> getAnimeRecommendByDivision(@PathVariable String nickname) {
-        List<AnimeSummaryDTO> list = divisionService.recommendAnimes(nickname);
-        return ResponseEntity.ok(list);
-    }
-
-    @GetMapping("/{nickname}")
-    public ResponseEntity<List<Anime>> getAnimeRecommendByNickname(
-            @PathVariable String nickname,
+    @GetMapping(value = {"/recommend", "/recommend/{nickname}"})
+    public ResponseEntity<?> getAnimeRecommendations(
+            @PathVariable(required = false) String nickname,
             @RequestParam(defaultValue = "false") boolean refresh) {
-        if (refresh) {
-            recommendService.evictUserRecommendationCache(nickname);
-        }
-        List<Anime> recommendations = recommendService.recommendAnimesForUser(nickname);
 
-        return ResponseEntity.ok(recommendations);
+        if (nickname != null && !nickname.isEmpty()) {
+            if (refresh) {
+                recommendService.evictUserRecommendationCache(nickname);
+            }
+
+            // 개인화 추천 리스트
+            List<Anime> personalizedRecommendations = recommendService.recommendAnimesForUser(nickname);
+
+            // 연령대 및 성별 기반 추천 리스트
+            List<AnimeSummaryDTO> groupRecommendations = divisionService.recommendAnimes(nickname);
+
+            // JSON 응답을 위한 DTO 생성
+            Map<String, Object> response = new HashMap<>();
+            response.put("nickname", nickname);
+            response.put("personalizedRecommendations", personalizedRecommendations);
+            response.put("groupRecommendations", groupRecommendations);
+
+            return ResponseEntity.ok(response);
+        }
+
+        // 로그인하지 않은 경우 (nickname이 없는 경우)
+        List<RecommendListDTO> generalRecommendations = recommendService.getRecommendLists();
+        return ResponseEntity.ok(Map.of("recommendations", generalRecommendations));
     }
 
-    /**
-     * 관리자용
-     */
     @PostMapping("/recommend")
     public ResponseEntity<RecommendList> addAnimeRecommendList(@RequestBody RecommendList recommendList) {
         RecommendList savedList = recommendService.insertRecommendList(recommendList);
@@ -82,5 +83,15 @@ public class AnimeRecommendController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    @Operation(
+            summary = "인기 애니메이션 추천",
+            description = "이번 분기 인기 애니메이션 리스트를 반환합니다"
+    )
+    @GetMapping("/trend")
+    public ResponseEntity<List<AnimeSummaryDTO>> getPopularAnime() {
+        List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(20);
+        return ResponseEntity.ok(popularAnime);
     }
 }

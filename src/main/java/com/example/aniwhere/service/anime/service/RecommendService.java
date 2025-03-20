@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
 public class RecommendService {
     private final RecommendListRepository recommendListRepository;
     private final AnimeRecommender animeRecommender;
-    private final PickedAnimeRepository pickedAnimeRepository; // 기존 LikeRepository 대신 PickedAnimeRepository 사용
+    private final PickedAnimeRepository pickedAnimeRepository;
+    private final AnimeRepository animeRepository;
 
     /**
      * 모든 추천 리스트를 가져옴
@@ -81,19 +82,18 @@ public class RecommendService {
      */
     @Cacheable(value = "recommendations", key = "#nickname")
     public List<Anime> recommendAnimesForUser(String nickname) {
-        List<PickedAnime> pickedAnimes = pickedAnimeRepository.findByUserNickname(nickname); // PickedAnime 사용
+        List<PickedAnime> pickedAnimes = pickedAnimeRepository.findByUserNickname(nickname);
 
-        // PickedAnime 리스트에서 Anime 리스트로 변환
         List<Anime> pickedAnimeList = pickedAnimes.stream()
-                .map(PickedAnime::getAnime) // PickedAnime에서 Anime 추출
-                .distinct() // 중복 제거
+                .map(PickedAnime::getAnime)
+                .distinct()
                 .collect(Collectors.toList());
 
         if (pickedAnimeList.isEmpty()) {
             throw new IllegalArgumentException("No picked animes found for user with nickname: " + nickname);
         }
 
-        return animeRecommender.recommend(pickedAnimeList, 10); // ✅ 변환 후 전달
+        return animeRecommender.recommend(pickedAnimeList, 10);
     }
 
     /**
@@ -102,5 +102,24 @@ public class RecommendService {
     @CacheEvict(value = "recommendations", key = "#nickname")
     public void evictUserRecommendationCache(String nickname) {
         log.info("Cleared recommendation cache for user: {}", nickname);
+    }
+
+    public List<AnimeSummaryDTO> getPopularAnime(int limit) {
+        List<Object[]> results = animeRepository.findPopularAnime(limit);
+
+        return results.stream().map(this::convertToDTO).toList();
+    }
+
+    private AnimeSummaryDTO convertToDTO(Object[] obj) {
+        return new AnimeSummaryDTO(
+                ((Number) obj[0]).longValue(),
+                (String) obj[1],
+                (String) obj[2],
+                (String) obj[3],
+                (String) obj[4],
+                obj[5] != null ? ((Number) obj[5]).intValue() : 0,
+                obj[6] != null ? ((Number) obj[6]).doubleValue() : 0.0,
+                obj[7] != null ? (String) obj[7] : "No reviews yet"
+        );
     }
 }

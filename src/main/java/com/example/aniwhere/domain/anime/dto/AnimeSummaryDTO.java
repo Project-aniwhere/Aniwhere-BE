@@ -1,15 +1,19 @@
 package com.example.aniwhere.domain.anime.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class AnimeSummaryDTO {
-    private Long animeId;         // 애니메이션 ID
-    private String title;         // 애니메이션 제목
-    private String poster;        // 포스터 URL
-    private double averageRating; // 평균 평점
+    private Long animeId;
+    private String title;
+    private String description;
+    private String poster;
+    private String studio;
+    private int episodes;
+    private double averageRating;
+    private String latestReview;
 }
