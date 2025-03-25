@@ -1,6 +1,7 @@
 package com.example.aniwhere.service.anime.service;
 
 import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
+import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
 import com.example.aniwhere.domain.recommendList.RecommendListDTO;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
@@ -11,10 +12,10 @@ import com.example.aniwhere.domain.recommendList.RecommendList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,6 @@ public class RecommendService {
                         .build()
                 )
                 .collect(Collectors.toList());
-
     }
 
     /**
@@ -80,20 +80,37 @@ public class RecommendService {
     /**
      * 유저의 `PickedAnime` 목록을 기반으로 애니메이션 추천
      */
-    @Cacheable(value = "recommendations", key = "#nickname")
-    public List<Anime> recommendAnimesForUser(String nickname) {
+//    @Cacheable(value = "recommendations", key = "#nickname")
+    public List<AnimeSummaryDTO> recommendAnimesForUser(String nickname) {
         List<PickedAnime> pickedAnimes = pickedAnimeRepository.findByUserNickname(nickname);
-
         List<Anime> pickedAnimeList = pickedAnimes.stream()
                 .map(PickedAnime::getAnime)
                 .distinct()
                 .collect(Collectors.toList());
 
         if (pickedAnimeList.isEmpty()) {
-            throw new IllegalArgumentException("No picked animes found for user with nickname: " + nickname);
+            return Collections.emptyList();
         }
 
-        return animeRecommender.recommend(pickedAnimeList, 10);
+        List<Anime> recommendedAnimes = animeRecommender.recommend(pickedAnimeList, 10);
+
+        return recommendedAnimes.stream().map(anime ->
+                AnimeSummaryDTO.builder()
+                        .animeId(anime.getAnimeId())
+                        .title(anime.getTitle())
+                        .description(anime.getDescription())
+                        .poster(anime.getPoster())
+                        .studio(anime.getStudio())
+                        .episodes(anime.getEpisodeCount())
+                        .averageRating((anime.getTotalScore()/anime.getScoreCnt()))  // 엔티티에 해당 필드가 있거나 계산해서 넣음
+                        .latestReview(
+                                anime.getReviews().stream()
+                                        .max(Comparator.comparing(AnimeReview::getCreatedAt))
+                                        .map(AnimeReview::getContent)
+                                        .orElse(null)
+                        )
+                        .build()
+        ).collect(Collectors.toList());
     }
 
     /**

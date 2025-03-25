@@ -15,10 +15,11 @@ public class DivisionAnime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "division_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "division_id", nullable = false)
+    @JoinColumn(name = "group_id", nullable = false)
     private Division division;
 
     @ManyToOne(fetch = FetchType.LAZY)
