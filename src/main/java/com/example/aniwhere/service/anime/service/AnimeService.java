@@ -11,7 +11,6 @@ import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.animeReview.AnimeReviewRepository;
 import com.example.aniwhere.repository.casting.repository.CastingRepository;
 import com.example.aniwhere.repository.episodes.EpisodesRepository;
-import com.example.aniwhere.repository.rating.repository.RatingRepository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
@@ -42,19 +41,18 @@ import static com.example.aniwhere.global.error.ErrorCode.*;
 public class AnimeService {
     private final AnimeRepository animeRepository;
     private final CastingRepository castingRepository;
-    private final RatingRepository ratingRepository;
     private final AnimeReviewRepository animeReviewRepository;
     private final UserRepository userRepository;
     private final EpisodesRepository episodesRepository;
 
 
-    public Double calculateAverageRating(List<AnimeResponseDTO.RatingDTO> reviews) {
+    public Double calculateAverageRating(List<AnimeReview> reviews) {
         if (reviews == null || reviews.isEmpty()) {
             return 0.0;
         }
 
         double totalRating = reviews.stream()
-                .mapToDouble(r -> r.getRating().doubleValue()) // BigDecimal → double 변환
+                .mapToDouble(AnimeReview::getRating) // BigDecimal → double 변환
                 .sum();
 
         return totalRating / reviews.size();
@@ -72,7 +70,7 @@ public class AnimeService {
     @Transactional(readOnly = true)
     public AnimeResponseDTO getAnimeById(long animeId) {
         Anime anime = animeRepository.findById(animeId)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 애니메이션에 대한 정보를 찾을 수 없습니다.", ErrorCode.NOT_FOUND_USER));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.NOT_FOUND_ANIME));
 
         List<AnimeResponseDTO.CastingDTO> castings = castingRepository.findCastingByAnime_animeId(animeId).stream()
                 .map(casting -> AnimeResponseDTO.CastingDTO.builder()
@@ -83,16 +81,7 @@ public class AnimeService {
                         .build())
                 .collect(Collectors.toList());
 
-        List<AnimeResponseDTO.RatingDTO> ratings = ratingRepository.findByAnime_AnimeId(animeId).stream()
-                .map(review -> AnimeResponseDTO.RatingDTO.builder()
-                        .reviewId(review.getReviewId())
-                        .userId(review.getUser().getProviderId().toString())
-                        .rating(review.getRating())
-                        .createdAt(review.getCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
-
-        Double averageRating = calculateAverageRating(ratings);
+        Double averageRating = calculateAverageRating(anime.getReviews());
 
         // 페이지 요청 시 리뷰 3개만 조회하도록 설정
         PageRequest pageRequest = new PageRequest();
@@ -136,7 +125,6 @@ public class AnimeService {
                         .map(animeCategory -> animeCategory.getCategory().getCategoryName())
                         .collect(Collectors.toSet()))
                 .castings(castings)
-                .ratings(ratings)
                 .averageRating(averageRating)
                 .reviews(reviews)
                 .build();

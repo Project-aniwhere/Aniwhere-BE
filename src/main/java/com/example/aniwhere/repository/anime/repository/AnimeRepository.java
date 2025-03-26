@@ -1,8 +1,6 @@
 package com.example.aniwhere.repository.anime.repository;
 
 import com.example.aniwhere.domain.anime.Anime;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,7 +49,7 @@ JOIN picked_anime p ON a.anime_id = p.anime_id
 JOIN CurrentQuarter cq ON a.airing_quarter = cq.current_quarter
 AND YEAR(a.release_date) = cq.current_year
 GROUP BY a.anime_id
-ORDER BY COUNT(p.id) DESC
+ORDER BY COUNT(p.picked_anime_id) DESC
 LIMIT :limit
 """, nativeQuery = true)
 List<Object[]> findPopularAnime(@Param("limit") int limit);

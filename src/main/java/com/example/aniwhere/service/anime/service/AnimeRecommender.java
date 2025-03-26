@@ -28,7 +28,7 @@ public class AnimeRecommender {
     private Anime[] allAnimesArray;
 
     @Transactional
-    @PostConstruct
+//    @PostConstruct
     @Scheduled(cron = "0 0 0 1 * *")
     public void initialize() {
         List<Anime> allAnimes = fetchAllAnimesWithCategories();

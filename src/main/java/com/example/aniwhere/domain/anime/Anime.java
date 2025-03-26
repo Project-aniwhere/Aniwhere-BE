@@ -3,10 +3,7 @@ package com.example.aniwhere.domain.anime;
 import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.casting.Casting;
 import com.example.aniwhere.domain.category.AnimeCategory;
-import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.domain.episodes.Episodes;
-import com.example.aniwhere.domain.rating.Rating;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -72,9 +69,6 @@ public class Anime {
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Casting> castings = new ArrayList<>();
-
-    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Rating> ratings = new ArrayList<>();
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnimeReview> reviews = new ArrayList<>();

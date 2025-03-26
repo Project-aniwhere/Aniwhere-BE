@@ -2,10 +2,10 @@ package com.example.aniwhere.service.division;
 
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
+import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.division.Division;
 import com.example.aniwhere.domain.division.DivisionAnime;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
-import com.example.aniwhere.domain.rating.Rating;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.division.DivisionRepository;
@@ -102,7 +102,7 @@ public class DivisionService {
                             .animeId(anime.getAnimeId())
                             .title(anime.getTitle())
                             .poster(anime.getPoster())
-                            .averageRating(calculateAverageRating(anime.getRatings()))
+                            .averageRating(calculateAverageRating(anime.getReviews()))
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -111,11 +111,11 @@ public class DivisionService {
     /**
      * 애니메이션 평균 평점 계산
      */
-    private Double calculateAverageRating(List<Rating> ratings) {
-        if (ratings == null || ratings.isEmpty()) {
+    private Double calculateAverageRating(List<AnimeReview> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
             return 0.0; // 리뷰가 없으면 0.0 반환
         }
-        return ratings.stream()
+        return reviews.stream()
                 .mapToDouble(review -> review.getRating().doubleValue()) // 변환 추가
                 .average()
                 .orElse(0.0);
