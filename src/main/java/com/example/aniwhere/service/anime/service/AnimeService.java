@@ -14,20 +14,16 @@ import com.example.aniwhere.repository.episodes.EpisodesRepository;
 import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
-import com.example.aniwhere.domain.category.Category;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
 
 import com.example.aniwhere.repository.user.UserRepository;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
@@ -56,15 +52,6 @@ public class AnimeService {
                 .sum();
 
         return totalRating / reviews.size();
-    }
-
-    private QuarterAnimeResponseDTO convertToDTO(Anime anime) {
-        return QuarterAnimeResponseDTO.builder()
-                .animeId(anime.getAnimeId())
-                .title(anime.getTitle())
-                .poster(anime.getPoster())
-                .weekday(anime.getWeekday())
-                .build();
     }
 
     @Transactional(readOnly = true)
@@ -143,25 +130,6 @@ public class AnimeService {
         return animeRepository.findAllGroupedByWeekday(year, quarter);
     }
 
-
-    public Map<String, List<QuarterAnimeResponseDTO>> getAnimeByYearAndQuarter(int year, int quarter) {
-        List<Anime> animes = animeRepository.findByYearAndQuarter(year, quarter);
-
-
-        List<String> weekdays = Arrays.asList("월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일");
-
-        // 요일별로 response
-        Map<String, List<QuarterAnimeResponseDTO>> groupedAnimes = weekdays.stream()
-                .collect(Collectors.toMap(day -> day, day -> new ArrayList<>(), (a, b) -> a, LinkedHashMap::new));
-
-        // 애니메이션 요일별로
-        animes.stream()
-                .filter(anime -> weekdays.contains(anime.getWeekday())) // 요일이 없는 경우 고려
-                .map(this::convertToDTO)
-                .forEach(anime -> groupedAnimes.get(anime.getWeekday()).add(anime));
-
-        return groupedAnimes;
-    }
 
     public PageResponse<AnimeReviewResponse> getAnimeReviews(Long animeId, PageRequest request) {
         return animeReviewRepository.getAnimeReviews(animeId, request);
