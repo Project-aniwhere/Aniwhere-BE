@@ -25,8 +25,8 @@ public class AnimeFeatureExtractorService {
     private Map<String, Integer> genreIndexMap;
 
     @PostConstruct
+    @Transactional(readOnly = true)
     public void init() {
-        // 모든 카테고리 이름을 가져온 후 중복 제거 및 인덱스 맵 생성
         List<String> allGenres = categoryRepository.findAllCategoryNames()
                 .stream()
                 .distinct()
@@ -39,7 +39,6 @@ public class AnimeFeatureExtractorService {
     }
 
     // 애니메이션 객체를 받아서 feature 벡터를 추출하는 메서드
-    @Transactional(readOnly = true)
     public double[] extractFeatures(Anime anime) {
         double[] genreFeatures = encodeCategories(
                 anime.getAnimeCategories().stream()

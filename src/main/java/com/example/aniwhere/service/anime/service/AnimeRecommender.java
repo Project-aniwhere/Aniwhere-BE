@@ -28,13 +28,11 @@ public class AnimeRecommender {
     private Anime[] allAnimesArray;
     private KDTree<Anime> kdTree;
 
-    @Transactional
     @PostConstruct
     public void initOnStartup() {
         loadInitialData();
     }
 
-    @Transactional
     @Scheduled(cron = "0 0 0 1 * *")
     public void scheduledRefresh() {
         loadInitialData();
