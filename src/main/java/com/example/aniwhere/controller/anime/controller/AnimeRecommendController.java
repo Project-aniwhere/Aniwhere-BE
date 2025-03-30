@@ -68,9 +68,9 @@ public class AnimeRecommendController {
     }
 
     @Operation(
-            summary = "관리자 선정 추천리스트 반환"
+            summary = "관리자 선정 추천리스트 조회"
     )
-    @GetMapping("/picks")
+    @GetMapping("/selected")
     public ResponseEntity<?> getAnimeRecommendations(){
         List<RecommendListDTO> recommendations = recommendService.getRecommendLists();
         return ResponseEntity.ok(recommendations);
@@ -79,7 +79,7 @@ public class AnimeRecommendController {
     @Operation(
             summary = "관리자 선정 추천리스트 추가"
     )
-    @PostMapping("/picks")
+    @PostMapping("/selected")
     public ResponseEntity<RecommendList> addAnimeRecommendList(@RequestBody RecommendList recommendList) {
         RecommendList savedList = recommendService.insertRecommendList(recommendList);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedList);
@@ -88,7 +88,7 @@ public class AnimeRecommendController {
     @Operation(
             summary = "관리자 선정 추천리스트 삭제"
     )
-    @DeleteMapping("/picks/{id}")
+    @DeleteMapping("/selected/{id}")
     public ResponseEntity<String> deleteAnimeRecommendList(@PathVariable Long id) {
         recommendService.deleteRecommendList(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -97,7 +97,7 @@ public class AnimeRecommendController {
     @Operation(
             summary = "관리자 선정 추천리스트 수정"
     )
-    @PatchMapping("/picks/{id}")
+    @PatchMapping("/selected/{id}")
     public ResponseEntity<RecommendList> updateAnimeRecommendList(
             @RequestBody RecommendList recommendList,
             @PathVariable Long id
