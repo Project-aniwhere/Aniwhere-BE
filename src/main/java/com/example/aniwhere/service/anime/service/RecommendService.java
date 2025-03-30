@@ -3,6 +3,7 @@ package com.example.aniwhere.service.anime.service;
 import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
 import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
+import com.example.aniwhere.domain.recommendList.RecommendListAnime;
 import com.example.aniwhere.domain.recommendList.RecommendListDTO;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
 import com.example.aniwhere.repository.anime.repository.RecommendListRepository;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -34,26 +36,32 @@ public class RecommendService {
     public List<RecommendListDTO> getRecommendLists() {
         List<RecommendList> recommendLists = recommendListRepository.findAll();
 
+        Collections.shuffle(recommendLists);
+
         return recommendLists.stream()
-                .map(recommendList -> RecommendListDTO.builder()
-                        .id(recommendList.getId())
-                        .title(recommendList.getTitle())
-                        .description(recommendList.getDescription())
-                        .animes(recommendList.getAnimes().stream()
-                                .map(recommendListAnime -> {
-                                    Anime anime = recommendListAnime.getAnime();
-                                    return AnimeSummaryDTO.builder()
-                                            .animeId(anime.getAnimeId())
-                                            .title(anime.getTitle())
-                                            .poster(anime.getPoster())
-                                            .build();
-                                })
-                                .collect(Collectors.toList())
-                        )
-                        .build()
-                )
+                .limit(5)
+                .map(recommendList -> {
+                    List<AnimeSummaryDTO> allAnimes = recommendList.getAnimes().stream()
+                            .map(recommendListAnime -> {
+                                Anime anime = recommendListAnime.getAnime();
+                                return AnimeSummaryDTO.builder()
+                                        .animeId(anime.getAnimeId())
+                                        .title(anime.getTitle())
+                                        .poster(anime.getPoster())
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    return RecommendListDTO.builder()
+                            .id(recommendList.getId())
+                            .title(recommendList.getTitle())
+                            .description(recommendList.getDescription())
+                            .animes(allAnimes)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
+
 
     /**
      * 추천 리스트 삽입

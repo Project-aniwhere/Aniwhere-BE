@@ -55,6 +55,8 @@ public class JwtWhitelist {
 		entries.add(new WhitelistEntry("/api/check/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/api/trend", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/picks", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/recommend", HttpMethod.GET));
 
 		entries.add(new WhitelistEntry("/api/anime/search", HttpMethod.POST));
 

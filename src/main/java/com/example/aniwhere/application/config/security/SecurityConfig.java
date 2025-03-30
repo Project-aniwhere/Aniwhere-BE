@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/check/**"),
 								new AntPathRequestMatcher("/api/recommend/**"),
 								new AntPathRequestMatcher("/api/trend"),
+								new AntPathRequestMatcher("/api/picks"),
 								new AntPathRequestMatcher("/api/v3/api-docs/**"),
 								new AntPathRequestMatcher("/api/swagger-ui/**")
 						).permitAll()
