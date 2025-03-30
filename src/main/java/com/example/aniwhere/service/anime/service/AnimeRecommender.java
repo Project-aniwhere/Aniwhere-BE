@@ -26,18 +26,27 @@ public class AnimeRecommender {
 
     private double[][] featureVectors;
     private Anime[] allAnimesArray;
+    private KDTree<Anime> kdTree;
 
-    @Transactional
-//    @PostConstruct
+    @PostConstruct
+    public void initOnStartup() {
+        loadInitialData();
+    }
+
     @Scheduled(cron = "0 0 0 1 * *")
-    public void initialize() {
+    public void scheduledRefresh() {
+        loadInitialData();
+    }
+
+    private void loadInitialData() {
         List<Anime> allAnimes = fetchAllAnimesWithCategories();
 
         this.featureVectors = allAnimes.stream()
-                .map(anime -> extractorService.extractFeatures(anime.getAnimeId()))
+                .map(extractorService::extractFeatures)
                 .toArray(double[][]::new);
 
         this.allAnimesArray = allAnimes.toArray(new Anime[0]);
+        this.kdTree = new KDTree<>(featureVectors, allAnimesArray);
     }
 
     @Transactional(readOnly = true)
@@ -45,31 +54,27 @@ public class AnimeRecommender {
         return animeRepository.findAllWithCategories();
     }
 
-    public List<Anime> recommend(List<Anime> userPickedAnimes, int k) { // ✅ List<Anime>으로 변경
+    public List<Anime> recommend(List<Anime> userPickedAnimes, int k) {
         if (featureVectors == null || allAnimesArray == null) {
             throw new IllegalStateException("Recommender is not initialized.");
         }
 
-        KDTree<Anime> kdTree = new KDTree<>(featureVectors, allAnimesArray); // kdTree 생성
-
         Set<Anime> recommendations = new HashSet<>();
-        for (Anime pickedAnime : userPickedAnimes) { // ✅ PickedAnime → Anime으로 변경
-            double[] pickedFeatures = extractorService.extractFeatures(pickedAnime.getAnimeId());
+        for (Anime pickedAnime : userPickedAnimes) {
+            double[] pickedFeatures = extractorService.extractFeatures(pickedAnime);
 
             Neighbor<double[], Anime>[] neighbors = kdTree.search(pickedFeatures, k);
 
             for (Neighbor<double[], Anime> neighbor : neighbors) {
                 Anime recommendedAnime = neighbor.value;
 
-                if (userPickedAnimes.stream().noneMatch(p -> p.equals(recommendedAnime))) { // ✅ getAnime() 제거
+                if (userPickedAnimes.stream().noneMatch(p -> p.equals(recommendedAnime))) {
                     recommendations.add(recommendedAnime);
                 }
             }
         }
 
         List<Anime> resultList = new ArrayList<>(recommendations);
-        return resultList.subList(0, Math.min(resultList.size(), 10)); // 최대 10개
+        return resultList.subList(0, Math.min(resultList.size(), 10));
     }
-
 }
-

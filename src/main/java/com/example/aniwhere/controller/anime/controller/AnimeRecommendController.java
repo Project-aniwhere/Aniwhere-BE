@@ -49,29 +49,37 @@ public class AnimeRecommendController {
             // JSON 응답을 위한 DTO 생성
             Map<String, Object> response = new HashMap<>();
             response.put("nickname", nickname);
-            if (personalizedRecommendations.isEmpty()){
-                response.put("personalizedRecommendations", "No picked animes found for user with nickname");
-                response.put("recommendations", recommendService.getPopularAnime(5));
-            }
-            else response.put("personalizedRecommendations", personalizedRecommendations);
+
+            response.put("personalizedRecommendations", personalizedRecommendations);
             response.put("groupRecommendations", groupRecommendations);
 
             return ResponseEntity.ok(response);
         }
 
         // 로그인하지 않은 경우 (nickname이 없는 경우)
-        List<RecommendListDTO> generalRecommendations = recommendService.getRecommendLists();
         List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(5);
         Map<String, Object> response = new HashMap<>();
         response.put("popularAnime", popularAnime);
-        response.put("groupRecommendations", generalRecommendations);
+        if (popularAnime.isEmpty()) {
+            response.put("message", "이번 분기의 인기 애니메이션이 아직 없습니다.");
+        }
+
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "관리자 선정 추천리스트 조회"
+    )
+    @GetMapping("/selected")
+    public ResponseEntity<?> getAnimeRecommendations(){
+        List<RecommendListDTO> recommendations = recommendService.getRecommendLists();
+        return ResponseEntity.ok(recommendations);
     }
 
     @Operation(
             summary = "관리자 선정 추천리스트 추가"
     )
-    @PostMapping("/recommend")
+    @PostMapping("/selected")
     public ResponseEntity<RecommendList> addAnimeRecommendList(@RequestBody RecommendList recommendList) {
         RecommendList savedList = recommendService.insertRecommendList(recommendList);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedList);
@@ -80,7 +88,7 @@ public class AnimeRecommendController {
     @Operation(
             summary = "관리자 선정 추천리스트 삭제"
     )
-    @DeleteMapping("/recommend/{id}")
+    @DeleteMapping("/selected/{id}")
     public ResponseEntity<String> deleteAnimeRecommendList(@PathVariable Long id) {
         recommendService.deleteRecommendList(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -89,7 +97,7 @@ public class AnimeRecommendController {
     @Operation(
             summary = "관리자 선정 추천리스트 수정"
     )
-    @PatchMapping("/recommend/{id}")
+    @PatchMapping("/selected/{id}")
     public ResponseEntity<RecommendList> updateAnimeRecommendList(
             @RequestBody RecommendList recommendList,
             @PathVariable Long id
@@ -107,8 +115,13 @@ public class AnimeRecommendController {
             description = "이번 분기 인기 애니메이션 리스트를 반환합니다"
     )
     @GetMapping("/trend")
-    public ResponseEntity<List<AnimeSummaryDTO>> getPopularAnime() {
+    public ResponseEntity<?> getPopularAnime() {
         List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(5);
-        return ResponseEntity.ok(popularAnime);
+        Map<String, Object> response = new HashMap<>();
+        response.put("popularAnime", popularAnime);
+        if (popularAnime.isEmpty()) {
+            response.put("message", "이번 분기의 인기 애니메이션이 아직 없습니다.");
+        }
+        return ResponseEntity.ok(response);
     }
 }

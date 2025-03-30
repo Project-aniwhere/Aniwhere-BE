@@ -21,10 +21,6 @@ import java.util.Set;
 
 
 public class AnimeDTO {
-
-
-
-
     @Getter
     @Setter
     @Builder
