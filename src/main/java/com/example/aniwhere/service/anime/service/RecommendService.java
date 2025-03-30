@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +34,7 @@ public class RecommendService {
     /**
      * 모든 추천 리스트를 가져옴
      */
+    @Transactional
     public List<RecommendListDTO> getRecommendLists() {
         List<RecommendList> recommendLists = recommendListRepository.findAll();
 

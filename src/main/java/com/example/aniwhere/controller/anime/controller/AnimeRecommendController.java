@@ -58,8 +58,10 @@ public class AnimeRecommendController {
 
         // 로그인하지 않은 경우 (nickname이 없는 경우)
         List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(5);
+        List<RecommendListDTO> recommendations = recommendService.getRecommendLists();
         Map<String, Object> response = new HashMap<>();
         response.put("popularAnime", popularAnime);
+        response.put("recommendations", recommendations);
         if (popularAnime.isEmpty()) {
             response.put("message", "이번 분기의 인기 애니메이션이 아직 없습니다.");
         }
