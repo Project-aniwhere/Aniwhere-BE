@@ -1,0 +1,22 @@
+# 프로덕션 서버 사양
+# docker compose up -d --build
+services:
+  spring:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      aniwhere_redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  aniwhere_redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
