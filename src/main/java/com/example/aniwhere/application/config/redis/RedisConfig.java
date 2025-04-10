@@ -6,25 +6,58 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.time.Duration;
+
 @Configuration
 public class RedisConfig {
 
-	@Value("${spring.data.redis.host}")
-	private String host;
+	@Value("${spring.data.redis.sentinel.master}")
+	private String master;
 
-	@Value("${spring.data.redis.port}")
-	private int port;
+	@Value("${spring.data.redis.sentinel.nodes}")
+	private String nodes;
+
+	@Value("${spring.data.redis.password}")
+	private String password;
+
+	@Value("${spring.data.redis.timeout:3000}")
+	private long timeout;
 
 	@Bean
-	public RedisConnectionFactory redisConnectionFactory() {
-		return new LettuceConnectionFactory(host, port);
+	public RedisConnectionFactory lettuceConnectionFactory() {
+		RedisSentinelConfiguration redisSentinelConfiguration = new RedisSentinelConfiguration()
+				.master(master);
+		redisSentinelConfiguration.setPassword(password);
+
+		String[] nodes = this.nodes.split(",");
+		for (String node : nodes) {
+			String[] hostAndPort = node.trim().split(":");
+			redisSentinelConfiguration.sentinel(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+		}
+
+		LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+				.commandTimeout(Duration.ofMillis(timeout))
+				.shutdownTimeout(Duration.ofMillis(timeout))
+				.build();
+
+		return new LettuceConnectionFactory(redisSentinelConfiguration, clientConfig);
+	}
+
+	@Bean
+	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+		StringRedisTemplate template = new StringRedisTemplate();
+		template.setConnectionFactory(redisConnectionFactory);
+		return template;
 	}
 
 	@Bean
