@@ -1,22 +1,159 @@
 # 프로덕션 서버 사양
 # docker compose up -d --build
 services:
-  spring:
-    build: .
+  spring-1:
+    build: ./docker
     ports:
       - "8080:8080"
     depends_on:
       aniwhere_redis:
         condition: service_healthy
+      aniwhere_mysql:
+        condition: service_healthy
     restart: unless-stopped
 
-  aniwhere_redis:
-    container_name: redis
-    image: redis:latest
+  spring-2:
+    build: ./docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      aniwhere_redis:
+        condition: service_healthy
+      aniwhere_mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dev_mysql:
+    container_name: dev-mysql
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: aniwhere
+      MYSQL_PASSWORD: aniwhere
+      MYSQL_ROOT_PASSWORD: aniwhere
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G  # Maximum memory limit
+          cpus: '1'   # Maximum CPU usage
+        reservations:
+          memory: 512M  # Minimum memory reservation
+          cpus: '0.5'  # Minimum CPU reservation
+
+  redis-master:
+    hostname: redis-master
+    container_name: redis-master
+    image: bitnami/redis:latest
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=aniwhere
+    networks:
+      - sentinel
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "-a", "aniwhere", "ping" ]
       interval: 5s
       retries: 10
     restart: unless-stopped
+
+  redis-slave-1:
+    hostname: redis-slave-1
+    container_name: redis-slave-1
+    image: bitnami/redis:latest
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PASSWORD=aniwhere
+      - REDIS_PASSWORD=aniwhere
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis-master
+    networks:
+      - sentinel
+
+  redis-slave-2:
+    hostname: redis-slave-2
+    container_name: redis-slave-2
+    image: bitnami/redis:latest
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PASSWORD=aniwhere
+      - REDIS_PASSWORD=aniwhere
+    ports:
+      - "6381:6379"
+    depends_on:
+      - redis-master
+    networks:
+      - sentinel
+
+  redis-sentinel-1:
+    hostname: redis-sentinel-1
+    container_name: redis-sentinel-1
+    image: bitnami/redis-sentinel:latest
+    environment:
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=5000
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_SET=dev-master
+      - REDIS_SENTINEL_QUORUM=2
+      - REDIS_MASTER_PASSWORD=aniwhere
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - '26379:26379'
+    networks:
+      - sentinel
+
+  redis-sentinel-2:
+    hostname: redis-sentinel-2
+    container_name: redis-sentinel-2
+    image: bitnami/redis-sentinel:latest
+    environment:
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=5000
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_SET=dev-master
+      - REDIS_SENTINEL_QUORUM=2
+      - REDIS_MASTER_PASSWORD=aniwhere
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - '26380:26379'
+    networks:
+      - sentinel
+
+  redis-sentinel-3:
+    hostname: redis-sentinel-3
+    container_name: redis-sentinel-3
+    image: bitnami/redis-sentinel:latest
+    environment:
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=5000
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_SET=dev-master
+      - REDIS_SENTINEL_QUORUM=2
+      - REDIS_MASTER_PASSWORD=aniwhere
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - '26381:26379'
+    networks:
+      - sentinel
+
+volumes:
+  mysql_data:
