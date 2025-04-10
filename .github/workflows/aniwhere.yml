@@ -54,7 +54,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "docker-compose.yml, Dockerfile, build/libs/*.jar"
+          source: "docker/docker-compose.yml, docker/Dockerfile, build/libs/*.jar"
           target: "~/app"
 
       - name: SSH로 EC2에 접속하기
