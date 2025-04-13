@@ -118,7 +118,7 @@ public class AnimeRecommendController {
     )
     @GetMapping("/trend")
     public ResponseEntity<?> getPopularAnime() {
-        List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(5);
+        List<AnimeSummaryDTO> popularAnime = recommendService.getPopularAnime(30);
         Map<String, Object> response = new HashMap<>();
         response.put("popularAnime", popularAnime);
         if (popularAnime.isEmpty()) {

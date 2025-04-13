@@ -57,8 +57,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 			log.info("Security Context에 인증 정보 저장 완료");
 		} catch (Exception e) {
 			log.error("토큰 검증 실패", e);
+			if (isOptionalEndpoint(request)) {
+				filterChain.doFilter(request, response);
+				return;
+			}
 			throw new UserException(UNAUTHORIZED);
 		}
 		filterChain.doFilter(request, response);
 	}
+	private boolean isOptionalEndpoint(HttpServletRequest request) {
+		String uri = request.getRequestURI();
+		String method = request.getMethod();
+		if ("GET".equals(method) && uri.matches("/api/anime/\\d+/?")) {
+			return true;
+		}
+		return false;
+	}
+
 }

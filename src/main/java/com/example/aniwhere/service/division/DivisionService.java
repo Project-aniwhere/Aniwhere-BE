@@ -11,6 +11,7 @@ import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.division.DivisionRepository;
 import com.example.aniwhere.repository.pickedAnime.PickedAnimeRepository;
 import com.example.aniwhere.repository.user.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,10 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.example.aniwhere.domain.category.dto.CategoryDTO.*;
 import static com.example.aniwhere.global.error.ErrorCode.NOT_FOUND_USER;
 
 @Service
@@ -87,10 +91,10 @@ public class DivisionService {
         User user = userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-        String gender = user.getSex().name(); // 성별
-        int age = calculateAge(user.getBirthyear()); // 나이 계산
+        String gender = user.getSex().name();
+        int age = calculateAge(user.getBirthyear());
 
-        String divisionName = getDivisionName(gender, age); // 그룹 이름
+        String divisionName = getDivisionName(gender, age);
 
         Division division = divisionRepository.findByName(divisionName)
                 .orElseThrow(() -> new RuntimeException("Division not found: " + divisionName));
@@ -98,11 +102,34 @@ public class DivisionService {
         return division.getDivisionAnimes().stream()
                 .map(divisionAnime -> {
                     Anime anime = divisionAnime.getAnime();
+
+                    double averageRating = 0.0;
+                    if (anime.getScoreCnt() != null && anime.getScoreCnt() > 0) {
+                        averageRating = (double) anime.getTotalScore() / anime.getScoreCnt();
+                    }
+
+                    String latestReview = anime.getReviews().stream()
+                            .max(Comparator.comparing(AnimeReview::getCreatedAt))
+                            .map(AnimeReview::getContent)
+                            .orElse("No reviews yet");
+
+                    List<CategoryResponseDTO> categories = anime.getAnimeCategories() == null
+                            ? new ArrayList<>()
+                            : anime.getAnimeCategories().stream()
+                            .map(animeCategory -> CategoryResponseDTO.of(animeCategory.getCategory()))
+                            .collect(Collectors.toList());
+
                     return AnimeSummaryDTO.builder()
                             .animeId(anime.getAnimeId())
                             .title(anime.getTitle())
+                            .description(anime.getDescription())
                             .poster(anime.getPoster())
-                            .averageRating(calculateAverageRating(anime.getReviews()))
+                            .studio(anime.getStudio())
+                            .episodes(anime.getEpisodeCount())
+                            .releaseDate(anime.getEndDate())
+                            .averageRating(averageRating)
+                            .latestReview(latestReview)
+                            .categories(categories)
                             .build();
                 })
                 .collect(Collectors.toList());

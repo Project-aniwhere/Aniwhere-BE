@@ -3,7 +3,6 @@ package com.example.aniwhere.service.anime.service;
 import com.example.aniwhere.domain.anime.dto.AnimeSummaryDTO;
 import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.pickedAnime.PickedAnime;
-import com.example.aniwhere.domain.recommendList.RecommendListAnime;
 import com.example.aniwhere.domain.recommendList.RecommendListDTO;
 import com.example.aniwhere.repository.anime.repository.AnimeRepository;
 import com.example.aniwhere.repository.anime.repository.RecommendListRepository;
@@ -21,6 +20,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.example.aniwhere.domain.category.dto.CategoryDTO.*;
 
 @Service
 @Slf4j
@@ -101,26 +102,38 @@ public class RecommendService {
         if (pickedAnimeList.isEmpty()) {
             return Collections.emptyList();
         }
-
         List<Anime> recommendedAnimes = animeRecommender.recommend(pickedAnimeList, 10);
 
-        return recommendedAnimes.stream().map(anime ->
-                AnimeSummaryDTO.builder()
-                        .animeId(anime.getAnimeId())
-                        .title(anime.getTitle())
-                        .description(anime.getDescription())
-                        .poster(anime.getPoster())
-                        .studio(anime.getStudio())
-                        .episodes(anime.getEpisodeCount())
-                        .averageRating((anime.getTotalScore()/anime.getScoreCnt()))  // 엔티티에 해당 필드가 있거나 계산해서 넣음
-                        .latestReview(
-                                anime.getReviews().stream()
-                                        .max(Comparator.comparing(AnimeReview::getCreatedAt))
-                                        .map(AnimeReview::getContent)
-                                        .orElse(null)
-                        )
-                        .build()
-        ).collect(Collectors.toList());
+        return recommendedAnimes.stream().map(anime -> {
+            double averageRating = 0.0;
+            if (anime.getScoreCnt() != null && anime.getScoreCnt() > 0) {
+                averageRating = (double) anime.getTotalScore() / anime.getScoreCnt();
+            }
+
+            String latestReview = anime.getReviews().stream()
+                    .max(Comparator.comparing(AnimeReview::getCreatedAt))
+                    .map(AnimeReview::getContent)
+                    .orElse("No reviews yet");
+
+            List<CategoryResponseDTO> categories = anime.getAnimeCategories() == null
+                    ? new ArrayList<>()
+                    : anime.getAnimeCategories().stream()
+                    .map(animeCategory -> CategoryResponseDTO.of(animeCategory.getCategory()))
+                    .collect(Collectors.toList());
+
+            return AnimeSummaryDTO.builder()
+                    .animeId(anime.getAnimeId())
+                    .title(anime.getTitle())
+                    .description(anime.getDescription())
+                    .poster(anime.getPoster())
+                    .studio(anime.getStudio())
+                    .episodes(anime.getEpisodeCount())
+                    .releaseDate(anime.getEndDate())
+                    .averageRating(averageRating)
+                    .latestReview(latestReview)
+                    .categories(categories)
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -145,8 +158,10 @@ public class RecommendService {
                 (String) obj[3],
                 (String) obj[4],
                 obj[5] != null ? ((Number) obj[5]).intValue() : 0,
-                obj[6] != null ? ((Number) obj[6]).doubleValue() : 0.0,
-                obj[7] != null ? (String) obj[7] : "No reviews yet"
+                obj[6] != null ? ((java.sql.Date) obj[6]).toLocalDate() : null,
+                obj[7] != null ? ((Number) obj[7]).doubleValue() : 0.0,
+                obj[8] != null ? (String) obj[8] : "No reviews yet",
+                obj.length > 9 && obj[9] != null ? (List<CategoryResponseDTO>) obj[9] : new ArrayList<>()
         );
     }
 }

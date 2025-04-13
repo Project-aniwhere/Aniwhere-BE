@@ -69,6 +69,8 @@ public class AnimeDTO {
 
         private List<EpisodesDto> episodes;
 
+        private Boolean ispicked;
+
         @Getter
         @Setter
         @Builder

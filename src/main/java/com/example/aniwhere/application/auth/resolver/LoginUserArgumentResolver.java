@@ -29,6 +29,18 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		checkAuthenticated(authentication);
+
+		Object principal = authentication.getPrincipal();
+		LoginUser loginUser = parameter.getParameterAnnotation(LoginUser.class);
+
+		if (!(principal instanceof JwtAuthentication)) {
+			if (loginUser.required() == false) {
+				return null;
+			} else {
+				throw new UserException(UNAUTHORIZED);
+			}
+		}
+
 		JwtAuthentication jwtAuthentication = (JwtAuthentication) authentication.getPrincipal();
 		return jwtAuthentication.userId();
 	}

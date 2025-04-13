@@ -6,6 +6,7 @@ import com.example.aniwhere.domain.animeReview.AnimeReview;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewRequest;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
 import com.example.aniwhere.domain.episodes.dto.EpisodesDto;
+import com.example.aniwhere.domain.pickedAnime.PickedAnime;
 import com.example.aniwhere.domain.user.User;
 import com.example.aniwhere.global.error.exception.UserException;
 import com.example.aniwhere.repository.animeReview.AnimeReviewRepository;
@@ -17,6 +18,7 @@ import com.example.aniwhere.repository.anime.repository.AnimeRepository;
 import com.example.aniwhere.global.error.ErrorCode;
 import com.example.aniwhere.global.error.exception.ResourceNotFoundException;
 
+import com.example.aniwhere.repository.pickedAnime.PickedAnimeRepository;
 import com.example.aniwhere.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,7 @@ public class AnimeService {
     private final AnimeReviewRepository animeReviewRepository;
     private final UserRepository userRepository;
     private final EpisodesRepository episodesRepository;
+    private final PickedAnimeRepository pickedAnimeRepository;
 
 
     public Double calculateAverageRating(List<AnimeReview> reviews) {
@@ -55,7 +58,7 @@ public class AnimeService {
     }
 
     @Transactional(readOnly = true)
-    public AnimeResponseDTO getAnimeById(long animeId) {
+    public AnimeResponseDTO getAnimeById(long animeId, Long userId) {
         Anime anime = animeRepository.findById(animeId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.NOT_FOUND_ANIME));
 
@@ -69,6 +72,14 @@ public class AnimeService {
                 .collect(Collectors.toList());
 
         Double averageRating = calculateAverageRating(anime.getReviews());
+        boolean ispick = false;
+
+        if (userId != null){
+            Optional<PickedAnime> picked = pickedAnimeRepository.findByAnime_AnimeIdAndUserId(animeId, userId);
+            if (picked.isPresent()) {
+                ispick = true;
+            }
+        }
 
         // 페이지 요청 시 리뷰 3개만 조회하도록 설정
         PageRequest pageRequest = new PageRequest();
@@ -104,6 +115,7 @@ public class AnimeService {
                 .trailer(anime.getTrailer())
                 .description(anime.getDescription())
                 .poster(anime.getPoster())
+                .ispicked(ispick)
                 .airingQuarter(anime.getAiringQuarter())
                 .isAdult(anime.getIsAdult())
                 .duration(anime.getDuration())
