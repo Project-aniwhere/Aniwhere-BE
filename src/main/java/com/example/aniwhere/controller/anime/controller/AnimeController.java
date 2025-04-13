@@ -3,16 +3,12 @@ package com.example.aniwhere.controller.anime.controller;
 import com.example.aniwhere.application.auth.resolver.LoginUser;
 import com.example.aniwhere.application.config.page.PageRequest;
 import com.example.aniwhere.application.config.page.PageResponse;
-import com.example.aniwhere.domain.anime.Anime;
 import com.example.aniwhere.domain.anime.dto.AnimeDTO.*;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewRequest;
 import com.example.aniwhere.domain.animeReview.dto.AnimeReviewResponse;
 import com.example.aniwhere.domain.animeReview.dto.ReviewJsonResponse;
 import com.example.aniwhere.domain.history.dto.HistoryUserDto;
-import com.example.aniwhere.domain.anime.dto.AnimeQuarterDTO;
 import com.example.aniwhere.service.anime.service.AnimeService;
-import com.example.aniwhere.global.error.ErrorCode;
-import com.example.aniwhere.global.error.exception.InvalidInputException;
 import com.example.aniwhere.service.history.HistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -24,7 +20,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -130,8 +125,8 @@ public class AnimeController {
             description = "특정 애니메이션를 상세 조회합니다."
     )
     @GetMapping("/anime/{animeId}")
-    public ResponseEntity<AnimeResponseDTO> getAnime(@PathVariable(name = "animeId") Long animeId) {
-        AnimeResponseDTO anime = animeService.getAnimeById(animeId);
+    public ResponseEntity<AnimeResponseDTO> getAnime(@PathVariable(name = "animeId") Long animeId, @LoginUser(required = false) final Long userId) {
+        AnimeResponseDTO anime = animeService.getAnimeById(animeId, userId);
         return ResponseEntity.
                 status(HttpStatus.OK)
                 .body(anime);

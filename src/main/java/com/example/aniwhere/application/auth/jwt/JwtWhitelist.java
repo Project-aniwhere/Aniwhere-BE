@@ -50,7 +50,8 @@ public class JwtWhitelist {
 		entries.add(new WhitelistEntry("/api/swagger-ui/**", HttpMethod.GET));
 
 		// 기타 허용 경로들
-		entries.add(new WhitelistEntry("/api/anime/**", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/anime/*/reviews", HttpMethod.GET));
+		entries.add(new WhitelistEntry("/api/anime/weekday", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/api/episodes/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/api/check/**", HttpMethod.GET));
 		entries.add(new WhitelistEntry("/", HttpMethod.GET));
