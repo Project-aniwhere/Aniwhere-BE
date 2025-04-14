@@ -64,7 +64,6 @@ dependencies {
 
 	//db
 	implementation 'mysql:mysql-connector-java:8.0.33'
-	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.5.3'
 
 	// Apache HttpComponents
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
